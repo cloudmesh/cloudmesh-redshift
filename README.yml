@@ -1,0 +1,23 @@
+---
+owner:
+  firstname: Gregor
+  lastname: von Laszewski
+  hid: fa18-616-112
+  community: i616
+  semester: sp19
+technologies:
+  - url: https://github.com/cloudmesh/technologies/blob/master/chapters/tech/azure-sql.md
+  - url: https://github.com/cloudmesh/technologies/blob/master/chapters/tech/pybrain.md
+  - url: https://github.com/cloudmesh/technologies/blob/master/chapters/tech/libcloud.md
+  - url: https://github.com/cloudmesh/technologies/blob/master/chapters/tech/openstack-keystone.md
+paper:
+  - keyword: Data
+    title: TBD
+    url: https://github.com/cloudmesh-community/sp19-616-112/blob/master/paper/paper.md
+    group: sp19-616-112
+project:
+  - keyword: TBD
+    title: TBD
+    url: https://github.com/cloudmesh-community/fa18-523-00/tree/master/project-report
+    group: sp19-616-112
+    code: TBD
