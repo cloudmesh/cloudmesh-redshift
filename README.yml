@@ -1,15 +1,12 @@
 ---
 owner:
-  firstname: Gregor
-  lastname: von Laszewski
+  firstname: Shirish
+  lastname: Joshi
   hid: fa18-616-112
   community: i616
   semester: sp19
 technologies:
-  - url: https://github.com/cloudmesh/technologies/blob/master/chapters/tech/azure-sql.md
-  - url: https://github.com/cloudmesh/technologies/blob/master/chapters/tech/pybrain.md
-  - url: https://github.com/cloudmesh/technologies/blob/master/chapters/tech/libcloud.md
-  - url: https://github.com/cloudmesh/technologies/blob/master/chapters/tech/openstack-keystone.md
+  - url: https://github.com/cloudmesh-community/book/chapters/data/aws-redshift.md
 paper:
   - keyword: Data
     title: TBD
