@@ -1,5 +1,5 @@
 
-## Week of 28/Jan/2019
+## Week of 4/Feb/2019
 
 * Python 3.7.2 setup
 * Installed Cmd5, OpenCV. Read chapter on Data center,  REST video.
