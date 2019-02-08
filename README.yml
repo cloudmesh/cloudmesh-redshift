@@ -7,6 +7,10 @@ owner:
   semester: sp19
 technologies:
   - url: https://github.com/cloudmesh-community/book/chapters/data/aws-redshift.md
+  # GCP BigTable
+  # Azure Data Warehouse
+  # SnowFlake
+  # 
 paper:
   - keyword: Data
     title: TBD
