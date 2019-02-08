@@ -11,10 +11,11 @@ technologies:
   # Azure Data Warehouse
   # SnowFlake
   # 
+  https://github.com/cloudmesh-community/book/blob/master/chapters/devops/iac-terraform.md
 paper:
   - keyword: Data
     title: TBD
-    url: https://github.com/cloudmesh-community/sp19-616-112/blob/master/paper/paper.md
+    #url: https://github.com/cloudmesh-community/sp19-616-112/blob/master/paper/paper.md
     group: sp19-616-112
 project:
   - keyword: TBD
