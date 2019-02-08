@@ -7,10 +7,9 @@
 * Implement a test driven approach
 
 ## Objective:
-* Develop a REST front-end to the databases to execute scripts that run the TPC benchmark setup
-* Develop a REST front-end to fire some of the main queries
-* Measure the response times of the queries
-* Study the construction of important Web benchmarks like YCSB, and 1-2 HTTP testing tools like K6/JMeter/Vegata/Goad
+* In the CloudMesh/CMD5 CLI, develop a set of DATABASE commands, and commands specific to databases, like REDSHIFT. Examples could to DATABASE CREATE, DATABASE DROP, DATABASE CREATE <objects>, 
+* Develop corresponding REST APIs 
+
 
 
 
