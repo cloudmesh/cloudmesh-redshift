@@ -1,4 +1,4 @@
-# Develop uniform REST front end to the major cloud Databases -- AWS RedShift, GCP BigTable and Azure DataWarehouse
+# Develop uniform REST front end to the major cloud Databases -- AWS RedShift (and others like GCP BigTable and Azure DataWarehouse)
 
 ## Motivation
 * Understand the construction of REST APIs
