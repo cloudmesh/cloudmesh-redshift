@@ -1,4 +1,19 @@
 
+## Week of 25/Feb/2019
+
+* Swagger client setup
+* Eve example try
+
+## Week of 18/Feb/2019
+
+* Swagger server setup
+
+## Week of 11/Feb/2019
+
+* Re-install due to change of workplace PC
+* Cloudmesh setup
+* CPU Flask example try
+
 ## Week of 4/Feb/2019
 
 * Python 3.7.2 setup
