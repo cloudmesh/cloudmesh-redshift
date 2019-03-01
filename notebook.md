@@ -2,7 +2,8 @@
 ## Week of 25/Feb/2019
 
 * Swagger client setup
-* Eve example try
+* Eve example try (not complete yet)
+* IaaS chapter
 
 ## Week of 18/Feb/2019
 
