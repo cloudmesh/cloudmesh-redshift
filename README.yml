@@ -8,6 +8,7 @@ owner:
 technologies:
   - url: https://github.com/cloudmesh-community/book/chapters/data/aws-redshift.md
   - url : https://github.com/cloudmesh-community/book/blob/master/chapters/devops/iac-terraform.md
+  
 paper:
   - keyword: Data
     title: TBD
@@ -18,3 +19,4 @@ project:
     url: https://github.com/cloudmesh-community/sp19-616-112/blob/master/project-proposal.md
     group: sp19-616-112
     code: TBD
+    docopts: https://github.com/cloudmesh-community/sp19-616-112/blob/master/docopts.md
