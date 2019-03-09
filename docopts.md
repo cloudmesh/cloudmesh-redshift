@@ -27,7 +27,7 @@
             Arguments:
                 NAME           database name. By default it is set to the name of last database.
 
-			Options
+	    Options
                 —-dbtype=DBS   the type of the cloud database (RedShift and others)
                 --username=USERNAME   the username of the admin user of the database
                 —-passwd=PASSWD   the password of the admin user of the database
