@@ -1,3 +1,12 @@
+## Week of 11/Mar/2019
+* Completed running of cpu swagger example (again, this time on new machine)
+* Discussion with Prof Gregor about splitting IAC-Terraform article into IAC (and comparing with DevOps), and Terraform.
+
+
+## Week of 4/Mar/2019
+* Completed setup of mac
+* CMS now runs with help from Prof Gregor in online office hours
+* Completed docopts homework
 
 ## Week of 25/Feb/2019
 
