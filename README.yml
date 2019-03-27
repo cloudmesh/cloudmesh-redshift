@@ -8,7 +8,6 @@ owner:
 section:
   - url: https://github.com/cloudmesh-community/book/blob/master/chapters/data/aws-redshift.md
   - url : https://github.com/cloudmesh-community/book/blob/master/chapters/devops/iac-terraform.md
-  
 paper:
   - keyword: Data
     title: TBD
