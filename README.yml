@@ -6,8 +6,12 @@ owner:
   community: i616
   semester: sp19
 section:
-  - url: https://github.com/cloudmesh-community/book/blob/master/chapters/data/aws-redshift.md
-  - url : https://github.com/cloudmesh-community/book/blob/master/chapters/devops/iac-terraform.md
+  - title: Aws Redshift
+    url: https://github.com/cloudmesh-community/book/blob/master/chapters/data/aws-redshift.md
+    keyword: ???   
+  - title: Teraform
+    keyword: ???
+    url : https://github.com/cloudmesh-community/book/blob/master/chapters/devops/iac-terraform.md
 paper:
   - keyword: Data
     title: TBD
