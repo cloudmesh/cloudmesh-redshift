@@ -61,5 +61,21 @@ class RedshiftCommand(PluginCommand):
         redshift = Manager()
 
         if arguments['describe']:
-            cluster = redshift.describe_cluster(arguments)
+        # redshift
+        # describe < CLUSTER_ID >
+            result = redshift.describe_cluster(arguments)
+        elif arguments['create']:
+        # redshift
+        # create < CLUSTER_ID > < DB_NAME > < USER_NAME > < PASSWD > < NODE_TYPE > [--type = TYPE] [--nodes = NODE_COUNT]
 
+        elif arguments['resize']:
+        # redshift
+        # resize < CLUSTER_ID > [--type = TYPE] [--nodes = NODE_COUNT]
+
+        elif arguments['modify']:
+        # redshift
+        # modify < CLUSTER_ID > [--newid = NEW_CLUSTER_ID] [--newpass = NEW_PASSWD]
+
+        elif arguments['delete']:
+        # redshift
+        # delete < CLUSTER_ID >
