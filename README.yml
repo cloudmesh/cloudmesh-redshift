@@ -5,10 +5,13 @@ owner:
   hid: fa18-616-112
   community: i616
   semester: sp19
-technologies:
-  - url: https://github.com/cloudmesh-community/book/blob/master/chapters/data/aws-redshift.md
-  - url : https://github.com/cloudmesh-community/book/blob/master/chapters/devops/iac-terraform.md
-  
+section:
+  - title: Aws Redshift
+    url: https://github.com/cloudmesh-community/book/blob/master/chapters/data/aws-redshift.md
+    keyword: ???   
+  - title: Teraform
+    keyword: ???
+    url : https://github.com/cloudmesh-community/book/blob/master/chapters/devops/iac-terraform.md
 paper:
   - keyword: Data
     title: TBD
