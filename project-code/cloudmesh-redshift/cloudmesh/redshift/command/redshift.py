@@ -4,7 +4,6 @@ from cloudmesh.shell.command import PluginCommand
 from cloudmesh.redshift.api.manager import Manager
 #from cloudmesh.redshift
 
-from cloudmesh.common.Printer import Printer
 
 
 class RedshiftCommand(PluginCommand):
@@ -13,21 +12,21 @@ class RedshiftCommand(PluginCommand):
     @command
     def do_redshift(self, args, arguments):
 
-    """
-      ::
+        """
+        ::
 
-      Usage:
-          redshift describe <CLUSTER_ID>
-          redshift create <CLUSTER_ID> <DB_NAME> <USER_NAME> <PASSWD> <NODE_TYPE> [--type=TYPE] [--nodes=NODE_COUNT]
-          redshift resize <CLUSTER_ID> [--type=TYPE] [--nodes=NODE_COUNT]
-          redshift modify <CLUSTER_ID> [--newid=NEW_CLUSTER_ID] [--newpass=NEW_PASSWD]
-          redshift delete <CLUSTER_ID>
+        Usage:
+        redshift describe CLUSTER_ID
+        redshift create CLUSTER_ID DB_NAME USER_NAME PASSWD NODE_TYPE [--type=TYPE] [--nodes=NODE_COUNT]
+        redshift resize CLUSTER_ID [--type=TYPE] [--nodes=NODE_COUNT]
+        redshift modify CLUSTER_ID [--newid=NEW_CLUSTER_ID] [--newpass=NEW_PASSWD]
+        redshift delete CLUSTER_ID
 
-      This command is used to interface with Amazon Web Services
-      RedShift service to create a single-node, or multi-node cluster,
-      resize, modify, and delete a database cluster
+        This command is used to interface with Amazon Web Services
+        RedShift service to create a single-node, or multi-node cluster,
+        resize, modify, and delete a database cluster
 
-      Arguments:
+        Arguments:
             CLUSTER_ID              The AWS RedShift Cluster ID.
             DB_NAME                 The name of the database
             USER_NAME               The user name for the master user
@@ -43,23 +42,24 @@ class RedshiftCommand(PluginCommand):
 
 
         Description:
-            redshift describe <CLUSTER_ID>
+            redshift describe CLUSTER_ID
                 Gives a detailed description of the redshift cluster
 
-            redshift create <CLUSTER_ID> <DB_NAME> <USER_NAME> <PASSWD> <NODE_TYPE> [--type=TYPE] [--nodes=NODE_COUNT]
+            redshift create CLUSTER_ID DB_NAME USER_NAME PASSWD NODE_TYPE [--type=TYPE] [--nodes=NODE_COUNT]
                 Creates the redshift cluster, either single-node, or multi-node, with the given DB name, master
                 username, password of the master user, with the node instance type, and count of nodes
 
-            redshift resize <CLUSTER_ID> [--type=TYPE] [--nodes=NODE_COUNT]
+            redshift resize CLUSTER_ID [--type=TYPE] [--nodes=NODE_COUNT]
                 Resizes the cluster to the specified type, and to the count of nodes specified
 
-            redshift modify <CLUSTER_ID> [--newid=NEW_CLUSTER_ID] [--newpass=NEW_PASSWD]
+            redshift modify CLUSTER_ID [--newid=NEW_CLUSTER_ID] [--newpass=NEW_PASSWD]
                 Modifies the cluster by changing the cluster id or changing the password of the master user
 
-            redshift delete <CLUSTER_ID>
+            redshift delete CLUSTER_ID
                 Delete the cluster
 
-    """
+        """
+
         map_parameters(arguments, 'status', 'format', 'type', 'master', 'node', 'count', 'state')
         # print(arguments)
 
@@ -67,22 +67,22 @@ class RedshiftCommand(PluginCommand):
 
         if arguments.describe:
             # redshift
-            # describe < CLUSTER_ID >
+            # describe  CLUSTER_ID
             result = redshift.describe_cluster(arguments)
         elif arguments['create']:
             # redshift
-            # create < CLUSTER_ID > < DB_NAME > < USER_NAME > < PASSWD > < NODE_TYPE > [--type = TYPE] [--nodes = NODE_COUNT]
+            # create  CLUSTER_ID   DB_NAME   USER_NAME   PASSWD   NODE_TYPE  [--type = TYPE] [--nodes = NODE_COUNT]
             pass
         elif arguments['resize']:
             # redshift
-            # resize < CLUSTER_ID > [--type = TYPE] [--nodes = NODE_COUNT]
+            # resize  CLUSTER_ID  [--type = TYPE] [--nodes = NODE_COUNT]
             pass
         elif arguments['modify']:
             # redshift
-            # modify < CLUSTER_ID > [--newid = NEW_CLUSTER_ID] [--newpass = NEW_PASSWD]
+            # modify  CLUSTER_ID  [--newid = NEW_CLUSTER_ID] [--newpass = NEW_PASSWD]
             pass
         elif arguments['delete']:
             # redshift
-            # delete < CLUSTER_ID >
+            # delete  CLUSTER_ID
             pass
 
