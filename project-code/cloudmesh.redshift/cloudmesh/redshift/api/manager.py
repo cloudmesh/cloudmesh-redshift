@@ -2,6 +2,7 @@ import boto3
 from cloudmesh.management.configuration.config import Config
 import uuid
 
+
 class Manager(object):
 
     def __init__(self):

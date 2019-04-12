@@ -2,6 +2,7 @@ from __future__ import print_function
 from cloudmesh.shell.command import command, map_parameters
 from cloudmesh.shell.command import PluginCommand
 from cloudmesh.db.api.manager import Manager
+from cloudmesh.redshift
 
 from cloudmesh.common.Printer import Printer
 
