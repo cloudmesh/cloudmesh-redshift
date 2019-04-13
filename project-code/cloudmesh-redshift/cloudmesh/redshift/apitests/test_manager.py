@@ -19,12 +19,10 @@ class TestRedshiftAPIManager():
     def test_describe_clusters(self):
         m = Manager()
         print(m.describe_clusters(args={}))
-        pass
 
     def test_describe_cluster(self):
         m = Manager()
         print(m.describe_cluster(args={'CLUSTER_ID':'cl2'}))
-        pass
 
     def test_create_single_node_cluster(self):
         m = Manager()

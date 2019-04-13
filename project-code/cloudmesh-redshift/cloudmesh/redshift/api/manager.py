@@ -1,6 +1,8 @@
 from cloudmesh.management.configuration.config import Config
 import uuid
 import boto3
+from botocore.exceptions import ClientError, ParamValidationError
+
 from cloudmesh.mongo.DataBaseDecorator import DatabaseUpdate
 
 
@@ -36,18 +38,39 @@ class Manager(object):
     # @DatabaseUpdate()
     def describe_clusters(self, args):
         client = self.get_client()
-        print(args)
-        results = client.describe_clusters()
+        # results = client.describe_clusters()
+        #
+        # return results['Clusters']
 
-        return results['Clusters']
+        try:
+            results = client.describe_clusters()
+            return results['Clusters']
+        except ClientError as e:
+            if e.response['Error']['Code'] == 'ClusterNotFound':
+                return "Cluster not found"
+            else:
+                return "Unexpected error: %s" % e
 
     # @DatabaseUpdate()
     def describe_cluster(self, args):
         client = self.get_client()
-        print(args)
-        results = client.describe_clusters(ClusterIdentifier=args['CLUSTER_ID'])
 
-        return results['Clusters']
+        try:
+            results = client.describe_clusters(ClusterIdentifier=args['CLUSTER_ID'])
+            return results['Clusters']
+        # except client.exceptions.ClusterNotFoundException as e:
+        #     print("Cluster not found")
+        #     return e
+        # except client.exceptions.ServiceNotFoundException as e:
+        #     print("Service not found")
+        #     return e
+        # finally:
+        #     return "Unhandled error"
+        except ClientError as e:
+            if e.response['Error']['Code'] == 'ClusterNotFound':
+                return "Cluster not found"
+            else:
+                return "Unexpected error: %s" % e
 
     # @DatabaseUpdate()
     def create_single_node_cluster(self, args):

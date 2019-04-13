@@ -2,11 +2,20 @@ from __future__ import print_function
 from cloudmesh.shell.command import command, map_parameters
 from cloudmesh.shell.command import PluginCommand
 from cloudmesh.redshift.api.manager import Manager
-#from cloudmesh.redshift
-
-
+from cloudmesh.common import logger
+from cloudmesh.common.Printer import Printer
+import sys
 
 class RedshiftCommand(PluginCommand):
+
+    def __init__(self):
+        self.log = logger.LOGGER("redshift-manager.log")
+        # logger.LOGGING_ON(logger.LOGGER("redshift-manager.log"))
+        return
+
+    def __del__(self):
+        # logger.LOGGING_OFF(logger.LOGGER("redshift-manager.log"))
+        return
 
     # noinspection PyUnusedLocal
     @command
@@ -60,18 +69,43 @@ class RedshiftCommand(PluginCommand):
 
         """
 
-        map_parameters(arguments, 'status', 'format', 'type', 'master', 'node', 'count', 'state')
+        # map_parameters(arguments, 'status', 'format', 'type', 'master', 'node', 'count', 'state')
         # print(arguments)
 
         redshift = Manager()
 
+        # self.log.info('Arguments are : ', arguments, ' Length : ', len(arguments))
+        # sys.stderr.write('Arguments are : ', arguments, ' Length : ', len(arguments))
+        # sys.stdout.write(Printer.dict(arguments))
+
         if arguments.describe:
             # redshift
             # describe  CLUSTER_ID
-            result = redshift.describe_cluster(arguments)
+
+            if args.get('CLUSTER_ID') is None:
+                # if arguments. == 0:
+                try:
+                    result = redshift.describe_clusters()
+                    print(result)
+                finally:
+                    return "Unhandled error"
+            else:
+                try:
+                    result = redshift.describe_cluster(arguments)
+                    print(result)
+                finally:
+                    return "Unhandled error"
+
         elif arguments['create']:
             # redshift
             # create  CLUSTER_ID   DB_NAME   USER_NAME   PASSWD   NODE_TYPE  [--type = TYPE] [--nodes = NODE_COUNT]
+
+            try:
+                result = redshift.create_single_node_cluster()
+                print(result)
+            finally:
+                return "Unhandled error"
+
             pass
         elif arguments['resize']:
             # redshift
