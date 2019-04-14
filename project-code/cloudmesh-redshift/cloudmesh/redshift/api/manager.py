@@ -12,6 +12,7 @@ class Manager(object):
         # self.opt_states = {'start': 'STARTING', 'boot': 'BOOTSTRAPPING', 'run': 'RUNNING', 'wait': 'WAITING',
         #               'terminating': 'TERMINATING', 'shutdown': 'TERMINATED', 'error': 'TERMINATED_WITH_ERRORS'}
 
+        print("inint:Manager:")
         return
 
     def get_client(self, service='redshift'):
@@ -80,8 +81,8 @@ class Manager(object):
             DBName=args['DB_NAME'],
             ClusterIdentifier=args['CLUSTER_ID'],
             ClusterType='single-node',
-            NodeType=args['NODE_TYPE'],
-            MasterUsername=args['USERNAME'],
+            NodeType=args['nodetype'],
+            MasterUsername=args['USER_NAME'],
             MasterUserPassword=args['PASSWD'],
             Port=5439,
             AllowVersionUpgrade=True,
@@ -97,25 +98,16 @@ class Manager(object):
     def create_multi_node_cluster(self, args):
         client = self.get_client()
 
-        # database
-        # create[—-dbname = NAME]
-        # [—-dbtype = DBS]
-        # [--username = USERNAME]
-        # [—-passwd = PASSWD]
-        # [—-nodes = NUM]
-        # [--secgroup = SECGROUPs]
-        # [—-tags = TAGS]
-
         results = client.create_cluster(
             DBName=args['DB_NAME'],
             ClusterIdentifier=args['CLUSTER_ID'],
             ClusterType='multi-node',
-            NodeType=args['NODE_TYPE'],
-            MasterUsername=args['USERNAME'],
+            NodeType=args['nodetype'],
+            MasterUsername=args['USER_NAME'],
             MasterUserPassword=args['PASSWD'],
             Port=5439,
             AllowVersionUpgrade=True,
-            NumberOfNodes=args['NODE_NUM'],
+            NumberOfNodes=int(args['nodes']),
             PubliclyAccessible=True,
             Encrypted=False
         )
@@ -138,30 +130,31 @@ class Manager(object):
                 "status": "Deleting"}
 
     # @DatabaseUpdate()
-    def resize_cluster_nodes(self, args):
+    def resize_cluster_node_count(self, args):
         client = self.get_client()
 
         results = client.modify_cluster(
             ClusterIdentifier=args['CLUSTER_ID'],
-            ClusterType=args['CLUSTER_TYPE'],
-            NumberOfNodes=args['NODE_NUM'],
+            ClusterType=args['type'],
+            NumberOfNodes=int(args['nodes']),
         )
 
         return {"cloud": "aws", "kind": "redshift", "cluster": results, "name": args['CLUSTER_ID'],
                 "status": "Resizing"}
 
     # @DatabaseUpdate()
-    # def resize_cluster_to_multi_node(self, args):
-    #     client = self.get_client()
-    #
-    #     results = client.modify_cluster(
-    #         ClusterIdentifier=args['CLUSTER_ID'],
-    #         ClusterType=args['CLUSTER_TYPE'],
-    #         NumberOfNodes=args['NODE_NUM']
-    #     )
-    #
-    #     return {"cloud": "aws", "kind": "redshift", "cluster": results, "name": args['CLUSTER_ID'],
-    #             "status": "Resizing"}
+    def resize_cluster_to_multi_node(self, args):
+        client = self.get_client()
+
+        results = client.modify_cluster(
+            ClusterIdentifier=args['CLUSTER_ID'],
+            ClusterType=args['type'],
+            NumberOfNodes=int(args['nodes']),
+            NodeType=args['nodetype']
+        )
+
+        return {"cloud": "aws", "kind": "redshift", "cluster": results, "name": args['CLUSTER_ID'],
+                "status": "Resizing"}
 
     # @DatabaseUpdate()
     def resize_cluster_node_types(self, args):
@@ -169,8 +162,8 @@ class Manager(object):
 
         results = client.modify_cluster(
             ClusterIdentifier=args['CLUSTER_ID'],
-            NodeType=args['NODE_TYPE'],
-            NumberOfNodes=args['NODE_NUM']
+            NodeType=args['nodetype'],
+            NumberOfNodes=int(args['nodes'])
         )
 
         return {"cloud": "aws", "kind": "redshift", "cluster": results, "name": args['CLUSTER_ID'],
@@ -180,9 +173,10 @@ class Manager(object):
     def modify_cluster(self, args):
         client = self.get_client()
 
+        print("in modify")
         results = client.modify_cluster(
             ClusterIdentifier=args['CLUSTER_ID'],
-            MasterUserPassword=args['PASSWD'],
+            MasterUserPassword=args['newpass']
         )
 
         return {"cloud": "aws", "kind": "redshift", "cluster": results, "name": args['CLUSTER_ID'],
@@ -192,10 +186,20 @@ class Manager(object):
     def rename_cluster(self, args):
         client = self.get_client()
 
+        print("in rename")
         results = client.modify_cluster(
             ClusterIdentifier=args['CLUSTER_ID'],
-            NewClusterIdentifier=args['NEW_CLUSTER_ID'],
+            NewClusterIdentifier=args['newid'],
         )
 
         return {"cloud": "aws", "kind": "redshift", "cluster": results, "name": args['CLUSTER_ID'],
                 "status": "Renaming"}
+
+
+        # {'describe': False, 'CLUSTER_ID': 'cl13',
+        #  'create': False, 'DB_NAME': None, 'USER_NAME': None, 'PASSWD': None, '--nodetype': 'dc1.large',
+        #  '--type': 'single-node', '--nodes': '1',
+        #  'resize': False, 'modify': True, '--newid': 'cl14', '--newpass': None,
+        #  'delete': False,
+        #  'type': 'single-node', 'nodetype': 'dc1.large', 'nodes': '1', 'newid': 'cl14', 'newpass': None}
+        #
