@@ -8,9 +8,9 @@ owner:
 section:
   - title: Aws Redshift
     url: https://github.com/cloudmesh-community/book/blob/master/chapters/data/aws-redshift.md
-    keyword: ???   
+    keyword: Redshift
   - title: Teraform
-    keyword: ???
+    keyword: Teraform
     url : https://github.com/cloudmesh-community/book/blob/master/chapters/devops/iac-terraform.md
 paper:
   - keyword: Data
