@@ -17,9 +17,9 @@ paper:
     title: TBD
     group: sp19-616-112
 project:
-  - keyword: TBD
-    title: TBD
-    url: https://github.com/cloudmesh-community/sp19-616-112/blob/master/project-proposal.md
+  - keyword: Redshift Database
+    title: Cloudmesh Interface to AWS Redshift
+    url: https://github.com/cloudmesh-community/sp19-616-112/blob/master/project-report/report.md
     group: sp19-616-112
-    code: TBD
+    code: https://github.com/cloudmesh-community/sp19-616-112/blob/master/project-code
     docopts: https://github.com/cloudmesh-community/sp19-616-112/blob/master/docopts.md
