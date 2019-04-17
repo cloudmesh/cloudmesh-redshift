@@ -1,5 +1,7 @@
 # Develop  REST front end to the major cloud Database -- AWS RedShift 
+
 ## Motivation
+
 * Understand the construction of REST APIs, and Open API
 * Study and Implement microservice architecture 
 * Study HTTP performance tools that exist - including some that are cloud based, and some non-cloud based.
