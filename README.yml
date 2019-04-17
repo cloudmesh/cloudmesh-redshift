@@ -23,3 +23,5 @@ project:
     group: sp19-616-112
     code: https://github.com/cloudmesh-community/sp19-616-112/blob/master/project-code
     docopts: https://github.com/cloudmesh-community/sp19-616-112/blob/master/docopts.md
+    pytest:
+      - TBD
