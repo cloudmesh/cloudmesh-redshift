@@ -2,24 +2,26 @@
 owner:
   firstname: Shirish
   lastname: Joshi
-  hid: fa18-616-112
+  hid: sp19-616-112
   community: i616
   semester: sp19
 section:
   - title: Aws Redshift
     url: https://github.com/cloudmesh-community/book/blob/master/chapters/data/aws-redshift.md
-    keyword: ???   
+    keyword: Redshift
   - title: Teraform
-    keyword: ???
+    keyword: Teraform
     url : https://github.com/cloudmesh-community/book/blob/master/chapters/devops/iac-terraform.md
 paper:
   - keyword: Data
     title: TBD
     group: sp19-616-112
 project:
-  - keyword: TBD
-    title: TBD
-    url: https://github.com/cloudmesh-community/sp19-616-112/blob/master/project-proposal.md
+  - keyword: Redshift Database
+    title: Cloudmesh Interface to AWS Redshift
+    url: https://github.com/cloudmesh-community/sp19-616-112/blob/master/project-report/report.md
     group: sp19-616-112
-    code: TBD
+    code: https://github.com/cloudmesh-community/sp19-616-112/blob/master/project-code
     docopts: https://github.com/cloudmesh-community/sp19-616-112/blob/master/docopts.md
+    pytest:
+      - TBD
