@@ -5,7 +5,7 @@ from cloudmesh.redshift.api.manager import Manager
 def describe_clusters():
     redshift = Manager()
 
-    result = redshift.describe_clusters()
+    result = redshift.describe_clusters({})
     print(result)
 
     return result

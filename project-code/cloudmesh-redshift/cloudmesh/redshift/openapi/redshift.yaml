@@ -252,7 +252,7 @@ definitions:
   RedShiftCluster:
     type: "object"
     required:
-    - "clusterID"
+    - "clusterId"
     properties:
-      id:
+      clusterId:
         type: "string"
