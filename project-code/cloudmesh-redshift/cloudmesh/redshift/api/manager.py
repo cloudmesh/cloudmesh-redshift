@@ -1,17 +1,14 @@
 from cloudmesh.management.configuration.config import Config
 import uuid
 import boto3
-from botocore.exceptions import ClientError, ParamValidationError
+from botocore.exceptions import ClientError
 
-from cloudmesh.mongo.DataBaseDecorator import DatabaseUpdate
-
+# from cloudmesh.mongo.DataBaseDecorator import DatabaseUpdate
+#
 
 class Manager(object):
 
     def __init__(self):
-        # self.opt_states = {'start': 'STARTING', 'boot': 'BOOTSTRAPPING', 'run': 'RUNNING', 'wait': 'WAITING',
-        #               'terminating': 'TERMINATING', 'shutdown': 'TERMINATED', 'error': 'TERMINATED_WITH_ERRORS'}
-
         print("inint:Manager:")
         return
 
@@ -77,10 +74,15 @@ class Manager(object):
     def create_single_node_cluster(self, args):
         client = self.get_client()
 
+        if args.get('CLUSTER_TYPE') != None:
+            cluster_type = args['CLUSTER_TYPE']
+        else:
+            cluster_type = 'single-node'
+
         results = client.create_cluster(
             DBName=args['DB_NAME'],
             ClusterIdentifier=args['CLUSTER_ID'],
-            ClusterType='single-node',
+            ClusterType=cluster_type,
             NodeType=args['nodetype'],
             MasterUsername=args['USER_NAME'],
             MasterUserPassword=args['PASSWD'],
@@ -98,10 +100,15 @@ class Manager(object):
     def create_multi_node_cluster(self, args):
         client = self.get_client()
 
+        if args.get('CLUSTER_TYPE') != None:
+            cluster_type = args['CLUSTER_TYPE']
+        else:
+            cluster_type = 'multi-node'
+
         results = client.create_cluster(
             DBName=args['DB_NAME'],
             ClusterIdentifier=args['CLUSTER_ID'],
-            ClusterType='multi-node',
+            ClusterType=cluster_type,
             NodeType=args['nodetype'],
             MasterUsername=args['USER_NAME'],
             MasterUserPassword=args['PASSWD'],
@@ -154,7 +161,7 @@ class Manager(object):
         )
 
         return {"cloud": "aws", "kind": "redshift", "cluster": results, "name": args['CLUSTER_ID'],
-                "status": "Resizing"}
+                "status": "Changing node count"}
 
     # @DatabaseUpdate()
     def resize_cluster_node_types(self, args):
@@ -167,7 +174,7 @@ class Manager(object):
         )
 
         return {"cloud": "aws", "kind": "redshift", "cluster": results, "name": args['CLUSTER_ID'],
-                "status": "Resizing"}
+                "status": "Changing node types"}
 
     # @DatabaseUpdate()
     def modify_cluster(self, args):
@@ -180,7 +187,7 @@ class Manager(object):
         )
 
         return {"cloud": "aws", "kind": "redshift", "cluster": results, "name": args['CLUSTER_ID'],
-                "status": "Modifying"}
+                "status": "Modifying password"}
 
     # @DatabaseUpdate()
     def rename_cluster(self, args):
