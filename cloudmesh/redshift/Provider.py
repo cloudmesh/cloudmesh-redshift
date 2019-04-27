@@ -2,27 +2,29 @@ from cloudmesh.management.configuration.config import Config
 import uuid
 import boto3
 from botocore.exceptions import ClientError
+from cloudmesh.DEBUG import VERBOSE
 
 # from cloudmesh.mongo.DataBaseDecorator import DatabaseUpdate
 #
 
-class Manager(object):
+class Provider(object):
 
-    def __init__(self):
-        print("inint:Manager:")
-        return
+    def __init__(self, service="redshift"):
+        VERBOSE("initialize redshift manager")
+        self.key_id = None
+        self.access_key = None
+        self.region = None
+        self.config = Config()
 
-    def get_client(self, service='redshift'):
-        configs = Config()
+        self.key_id = self.config['cloudmesh.cloud.aws.credentials.EC2_ACCESS_ID']
+        self.access_key = self.config['cloudmesh.cloud.aws.credentials.EC2_SECRET_KEY']
+        self.region = self.config['cloudmesh.cloud.aws.credentials.region']
 
-        key_id = configs['cloudmesh.cloud.aws.credentials.EC2_ACCESS_ID']
-        access_key = configs['cloudmesh.cloud.aws.credentials.EC2_SECRET_KEY']
-        region = configs['cloudmesh.cloud.aws.credentials.region']
-
-        client = boto3.client(service, region_name=region,
-                              aws_access_key_id=key_id,
-                              aws_secret_access_key=access_key)
-        return client
+        self.client = boto3.client(
+            service,
+            region_name=self.region,
+            aws_access_key_id=self.key_id,
+            aws_secret_access_key=self.access_key)
 
     # def parse_options(self, options, states):
     #     result = []
@@ -35,13 +37,8 @@ class Manager(object):
 
     # @DatabaseUpdate()
     def describe_clusters(self, args):
-        client = self.get_client()
-        # results = client.describe_clusters()
-        #
-        # return results['Clusters']
-
         try:
-            results = client.describe_clusters()
+            results = self.client.describe_clusters()
             return results['Clusters']
         except ClientError as e:
             if e.response['Error']['Code'] == 'ClusterNotFound':
@@ -51,10 +48,8 @@ class Manager(object):
 
     # @DatabaseUpdate()
     def describe_cluster(self, args):
-        client = self.get_client()
-
         try:
-            results = client.describe_clusters(ClusterIdentifier=args['CLUSTER_ID'])
+            results = self.client.describe_clusters(ClusterIdentifier=args['CLUSTER_ID'])
             return results['Clusters']
         # except client.exceptions.ClusterNotFoundException as e:
         #     print("Cluster not found")
@@ -72,14 +67,12 @@ class Manager(object):
 
     # @DatabaseUpdate()
     def create_single_node_cluster(self, args):
-        client = self.get_client()
-
         if args.get('CLUSTER_TYPE') != None:
             cluster_type = args['CLUSTER_TYPE']
         else:
             cluster_type = 'single-node'
 
-        results = client.create_cluster(
+        results = self.client.create_cluster(
             DBName=args['DB_NAME'],
             ClusterIdentifier=args['CLUSTER_ID'],
             ClusterType=cluster_type,
@@ -93,19 +86,21 @@ class Manager(object):
             Encrypted=False
         )
 
-        return {"cloud": "aws", "kind": "redshift", "cluster": results, "name": args['CLUSTER_ID'],
+        return {"cloud": "aws",
+                "kind": "redshift",
+                "cluster": results,
+                "name": args['CLUSTER_ID'],
                 "status": "Creating"}
 
     # @DatabaseUpdate()
     def create_multi_node_cluster(self, args):
-        client = self.get_client()
 
         if args.get('CLUSTER_TYPE') != None:
             cluster_type = args['CLUSTER_TYPE']
         else:
             cluster_type = 'multi-node'
 
-        results = client.create_cluster(
+        results = self.client.create_cluster(
             DBName=args['DB_NAME'],
             ClusterIdentifier=args['CLUSTER_ID'],
             ClusterType=cluster_type,
@@ -124,9 +119,7 @@ class Manager(object):
 
     # @DatabaseUpdate()
     def delete_cluster(self, args):
-        client = self.get_client()
-
-        results = client.delete_cluster(
+        results = self.client.delete_cluster(
             ClusterIdentifier=args['CLUSTER_ID'],
             SkipFinalClusterSnapshot=False,
             FinalClusterSnapshotIdentifier=args['CLUSTER_ID'] + str(uuid.uuid1()),
@@ -138,9 +131,7 @@ class Manager(object):
 
     # @DatabaseUpdate()
     def resize_cluster_node_count(self, args):
-        client = self.get_client()
-
-        results = client.modify_cluster(
+        results = self.client.modify_cluster(
             ClusterIdentifier=args['CLUSTER_ID'],
             ClusterType=args['type'],
             NumberOfNodes=int(args['nodes']),
@@ -151,9 +142,7 @@ class Manager(object):
 
     # @DatabaseUpdate()
     def resize_cluster_to_multi_node(self, args):
-        client = self.get_client()
-
-        results = client.modify_cluster(
+        results = self.client.modify_cluster(
             ClusterIdentifier=args['CLUSTER_ID'],
             ClusterType=args['type'],
             NumberOfNodes=int(args['nodes']),
@@ -165,41 +154,44 @@ class Manager(object):
 
     # @DatabaseUpdate()
     def resize_cluster_node_types(self, args):
-        client = self.get_client()
-
-        results = client.modify_cluster(
+        results = self.client.modify_cluster(
             ClusterIdentifier=args['CLUSTER_ID'],
             NodeType=args['nodetype'],
             NumberOfNodes=int(args['nodes'])
         )
 
-        return {"cloud": "aws", "kind": "redshift", "cluster": results, "name": args['CLUSTER_ID'],
+        return {"cloud": "aws",
+                "kind": "redshift",
+                "cluster": results,
+                "name": args['CLUSTER_ID'],
                 "status": "Changing node types"}
 
     # @DatabaseUpdate()
     def modify_cluster(self, args):
-        client = self.get_client()
-
-        print("in modify")
-        results = client.modify_cluster(
+        VERBOSE("in modify")
+        results = self.client.modify_cluster(
             ClusterIdentifier=args['CLUSTER_ID'],
             MasterUserPassword=args['newpass']
         )
 
-        return {"cloud": "aws", "kind": "redshift", "cluster": results, "name": args['CLUSTER_ID'],
+        return {"cloud": "aws",
+                "kind": "redshift",
+                "cluster": results,
+                "name": args['CLUSTER_ID'],
                 "status": "Modifying password"}
 
     # @DatabaseUpdate()
     def rename_cluster(self, args):
-        client = self.get_client()
-
-        print("in rename")
-        results = client.modify_cluster(
+        VERBOSE("in rename")
+        results = self.client.modify_cluster(
             ClusterIdentifier=args['CLUSTER_ID'],
             NewClusterIdentifier=args['newid'],
         )
 
-        return {"cloud": "aws", "kind": "redshift", "cluster": results, "name": args['CLUSTER_ID'],
+        return {"cloud": "aws",
+                "kind": "redshift",
+                "cluster": results,
+                "name": args['CLUSTER_ID'],
                 "status": "Renaming"}
 
 

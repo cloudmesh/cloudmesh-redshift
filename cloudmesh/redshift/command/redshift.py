@@ -1,7 +1,7 @@
 from __future__ import print_function
 from cloudmesh.shell.command import command, map_parameters
 from cloudmesh.shell.command import PluginCommand
-from cloudmesh.redshift.api.manager import Manager
+from cloudmesh.redshift.Provider import Provider
 from cloudmesh.common import logger
 # from cloudmesh.common.Printer import Printer
 from docopt import docopt
@@ -77,7 +77,7 @@ class RedshiftCommand(PluginCommand):
 
         map_parameters(arguments, 'type', 'nodetype', 'nodes', 'newid', 'newpass')
 
-        redshift = Manager()
+        redshift = Provider()
 
         # {'describe': False, 'CLUSTER_ID': 'cl13',
         #  'create': False, 'DB_NAME': None, 'USER_NAME': None, 'PASSWD': None, '--nodetype': 'dc1.large',
@@ -104,8 +104,10 @@ class RedshiftCommand(PluginCommand):
         elif arguments.create:
             if arguments.get("type") == 'single-node':
                 try:
-                    d1 = {'CLUSTER_ID': arguments.get('CLUSTER_ID'), 'DB_NAME': arguments.get('DB_NAME'),
-                          'nodetype': arguments.get('nodetype'), 'USER_NAME': arguments.get('USER_NAME'),
+                    d1 = {'CLUSTER_ID': arguments.get('CLUSTER_ID'),
+                          'DB_NAME': arguments.get('DB_NAME'),
+                          'nodetype': arguments.get('nodetype'),
+                          'USER_NAME': arguments.get('USER_NAME'),
                           'PASSWD': arguments.get('PASSWD')}
                     result = redshift.create_single_node_cluster(d1)
                     print(result)
@@ -113,9 +115,12 @@ class RedshiftCommand(PluginCommand):
                     return "Unhandled error"
             else:
                 try:
-                    d1 = {'CLUSTER_ID': arguments.get('CLUSTER_ID'), 'DB_NAME': arguments.get('DB_NAME'),
-                          'nodetype': arguments.get('nodetype'), 'USER_NAME': arguments.get('USER_NAME'),
-                          'PASSWD': arguments.get('PASSWD'), 'nodes': arguments.get('nodes')}
+                    d1 = {'CLUSTER_ID': arguments.get('CLUSTER_ID'),
+                          'DB_NAME': arguments.get('DB_NAME'),
+                          'nodetype': arguments.get('nodetype'),
+                          'USER_NAME': arguments.get('USER_NAME'),
+                          'PASSWD': arguments.get('PASSWD'),
+                          'nodes': arguments.get('nodes')}
                     result = redshift.create_multi_node_cluster(d1)
                     print(result)
                 finally:
@@ -126,13 +131,19 @@ class RedshiftCommand(PluginCommand):
             if arguments.get('nodetype') != 'dc2.large':
                 # resizing nodes
                 # NOTE: Necessary to have right number of nodes to be passed in
-                d1 = {'CLUSTER_ID': arguments.get('CLUSTER_ID'), 'type': arguments.get('type'), 'nodetype': arguments.get('nodetype'), 'nodes': arguments.get('nodes')}
+                d1 = {'CLUSTER_ID': arguments.get('CLUSTER_ID'),
+                      'type': arguments.get('type'),
+                      'nodetype': arguments.get('nodetype'),
+                      'nodes': arguments.get('nodes')}
                 # print(d1)
                 result = redshift.resize_cluster_node_types(d1)
                 print(result)
             elif int(arguments.get('nodes')) > 1:
                 # changing type of cluster from single-node to multi-node
-                d1 = {'CLUSTER_ID': arguments.get('CLUSTER_ID'), 'type': 'multi-node', 'nodetype': arguments.get('nodetype'), 'nodes': arguments.get('nodes')}
+                d1 = {'CLUSTER_ID': arguments.get('CLUSTER_ID'),
+                      'type': 'multi-node',
+                      'nodetype': arguments.get('nodetype'),
+                      'nodes': arguments.get('nodes')}
                 # print(d1)
                 result = redshift.resize_cluster_to_multi_node(d1)
                 print(result)
@@ -142,7 +153,8 @@ class RedshiftCommand(PluginCommand):
             if arguments.get('newid') is None and arguments.get('newpass'):
                 print("in modify")
                 try:
-                    d1 = {'CLUSTER_ID': arguments.get('CLUSTER_ID'), 'newpass': arguments.get('newpass')}
+                    d1 = {'CLUSTER_ID': arguments.get('CLUSTER_ID'),
+                          'newpass': arguments.get('newpass')}
                     result = redshift.modify_cluster(d1)
                     print(result)
                 finally:
@@ -150,7 +162,8 @@ class RedshiftCommand(PluginCommand):
             elif arguments.get('newid') and arguments.get('newpass') is None:
                 print("in rename")
                 try:
-                    d1 = {'CLUSTER_ID': arguments.get('CLUSTER_ID'), 'newid': arguments.get('newid')}
+                    d1 = {'CLUSTER_ID': arguments.get('CLUSTER_ID'),
+                          'newid': arguments.get('newid')}
                     result = redshift.rename_cluster(d1)
                     print(result)
                 finally:
