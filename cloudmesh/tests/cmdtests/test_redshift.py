@@ -6,13 +6,12 @@ from cloudmesh.common.util import banner
 
 from docopt import docopt
 
-
 import sys
 from contextlib import contextmanager
 from io import StringIO
 
-
 doc = RedshiftCommand.__doc__
+
 
 #
 # you could have used our simple run methods from
@@ -39,7 +38,7 @@ class TestRedshiftCommand(RedshiftCommand):
         with captured_output() as (out, err):
             sys.stdout.write(r.do_redshift('describe'))
             output = out.getvalue().strip()
-            assert 'Cluster not found' in  output
+            assert 'Cluster not found' in output
         # pass
 
     def test_describe_existing_cluster_existing_clusters(self):
@@ -48,7 +47,7 @@ class TestRedshiftCommand(RedshiftCommand):
         with captured_output() as (out, err):
             sys.stdout.write(r.do_redshift('describe'))
             output = out.getvalue().strip()
-            assert 'redshift-cluster-2' in  output
+            assert 'redshift-cluster-2' in output
         # pass
 
     def test_describe_non_existent_cluster(self):
@@ -58,7 +57,7 @@ class TestRedshiftCommand(RedshiftCommand):
         with captured_output() as (out, err):
             print(r.do_redshift('describe cl2'))
             output = out.getvalue().strip()
-            assert 'Cluster not found' in  output
+            assert 'Cluster not found' in output
         # pass
 
     def test_describe_existing_cluster(self):
@@ -67,7 +66,7 @@ class TestRedshiftCommand(RedshiftCommand):
         with captured_output() as (out, err):
             print(r.do_redshift('describe redshift-cluster-2'))
             output = out.getvalue().strip()
-            assert 'redshift-cluster-2' in  output
+            assert 'redshift-cluster-2' in output
         # pass
 
     def test_delete_non_existing_cluster(self):

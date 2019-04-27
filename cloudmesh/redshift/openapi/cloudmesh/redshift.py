@@ -11,15 +11,16 @@ def describe_clusters():
     return result
 
 
-def describe_cluster(clusterId):
+def describe_cluster(cluster_Id):
     redshift = Provider()
 
-    result = redshift.describe_cluster({'CLUSTER_ID': clusterId})
+    result = redshift.describe_cluster({'CLUSTER_ID': cluster_Id})
     print(result)
 
     return result
 
-def create_multi_node_cluster(clusterId,
+
+def create_multi_node_cluster(cluster_id,
                               dbName,
                               masterUserName,
                               passWord,
@@ -28,7 +29,7 @@ def create_multi_node_cluster(clusterId,
                               nodeCount):
     redshift = Provider()
 
-    result = redshift.create_multi_node_cluster({'CLUSTER_ID': clusterId,
+    result = redshift.create_multi_node_cluster({'CLUSTER_ID': cluster_id,
                                                  'DB_NAME': dbName,
                                                  'USER_NAME': masterUserName,
                                                  'PASSWD': passWord,
@@ -40,40 +41,43 @@ def create_multi_node_cluster(clusterId,
     return result
 
 
-def delete_cluster(clusterId):
+def delete_cluster(cluster_id):
     redshift = Provider()
-    result = redshift.delete_cluster({'CLUSTER_ID':clusterId})
+    result = redshift.delete_cluster({'CLUSTER_ID': cluster_id})
     print(result)
     return result
 
-def resize_cluster(clusterId, clusterType, nodeCount, nodeType):
+
+def resize_cluster(cluster_id, clusterType, nodeCount, nodeType):
     redshift = Provider()
-    result = redshift.resize_cluster_node_count({'CLUSTER_ID': clusterId,
+    result = redshift.resize_cluster_node_count({'CLUSTER_ID': cluster_id,
                                                  'nodetype': nodeType,
                                                  'CLUSTER_TYPE': clusterType,
                                                  'nodes': int(nodeCount)})
     print(result)
     return result
 
-def change_node_type(clusterId, clusterType, nodeType):
+
+def change_node_type(cluster_id, clusterType, nodeType):
     redshift = Provider()
-    result = redshift.resize_cluster_node_types({'CLUSTER_ID': clusterId,
+    result = redshift.resize_cluster_node_types({'CLUSTER_ID': cluster_id,
                                                  'nodetype': nodeType,
                                                  'CLUSTER_TYPE': clusterType})
     print(result)
     return result
 
-def rename_cluster(clusterId, newId):
+
+def rename_cluster(cluster_id, newId):
     redshift = Provider()
-    result = redshift.rename_cluster({'CLUSTER_ID':clusterId,
+    result = redshift.rename_cluster({'CLUSTER_ID': cluster_id,
                                       'newid': newId})
     print(result)
     return result
 
-def chg_password(clusterId, newPass):
+
+def chg_password(cluster_id, newPass):
     redshift = Provider()
-    result = redshift.modify_cluster({'CLUSTER_ID':clusterId,
+    result = redshift.modify_cluster({'CLUSTER_ID': cluster_id,
                                       'newpass': newPass})
     print(result)
     return result
-

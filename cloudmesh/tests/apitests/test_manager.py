@@ -15,16 +15,16 @@ class TestRedshiftAPIProvider():
 
     def test_describe_cluster(self):
         m = Provider()
-        print(m.describe_cluster(args={'CLUSTER_ID':'cl2'}))
+        print(m.describe_cluster(args={'CLUSTER_ID': 'cl2'}))
 
     def test_create_single_node_cluster(self):
         m = Provider()
-        #print(m.create_single_node_cluster(args={'CLUSTER_ID': 'my-cl1', 'DB_NAME': 'db1', 'nodetype': 'dc2.large', 'USER_NAME': 'awsuser', 'PASSWD': 'AWSPassword321'}))
+        # print(m.create_single_node_cluster(args={'CLUSTER_ID': 'my-cl1', 'DB_NAME': 'db1', 'nodetype': 'dc2.large', 'USER_NAME': 'awsuser', 'PASSWD': 'AWSPassword321'}))
         pass
 
     def test_create_multi_node_cluster(self):
         m = Provider()
-        #print(m.create_multi_node_cluster(args={'CLUSTER_ID': 'my-cl2', 'DB_NAME': 'db1', 'nodetype': 'dc2.large', 'USER_NAME': 'awsuser', 'PASSWD': 'AWSPassword321', 'nodes': '2'}))
+        # print(m.create_multi_node_cluster(args={'CLUSTER_ID': 'my-cl2', 'DB_NAME': 'db1', 'nodetype': 'dc2.large', 'USER_NAME': 'awsuser', 'PASSWD': 'AWSPassword321', 'nodes': '2'}))
         pass
 
     def test_delete_cluster(self):
@@ -47,14 +47,14 @@ class TestRedshiftAPIProvider():
     #     print(m.resize_cluster_to_multi_node(args={'CLUSTER_ID':'cl1','type':'multi-node','nodes':4}))
     #     pass
 
-
     def test_modify_cluster(self):
         m = Provider()
-        print(m.modify_cluster(args={'CLUSTER_ID':'cl12','newpass':'AWSPassword123'}))
+        print(m.modify_cluster(
+            args={'CLUSTER_ID': 'cl12', 'newpass': 'AWSPassword123'}))
         # pass
 
     def test_rename_cluster(self):
         print("rename")
         m = Provider()
-        print(m.rename_cluster(args={'CLUSTER_ID':'cl12', 'newid':'cl13'}))
+        print(m.rename_cluster(args={'CLUSTER_ID': 'cl12', 'newid': 'cl13'}))
         # pass

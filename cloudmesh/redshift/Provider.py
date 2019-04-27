@@ -5,6 +5,7 @@ from botocore.exceptions import ClientError
 from cloudmesh.DEBUG import VERBOSE
 from cloudmesh.mongo.DataBaseDecorator import DatabaseUpdate
 
+
 class Provider(object):
 
     def __init__(self, service="redshift"):
@@ -14,10 +15,11 @@ class Provider(object):
         self.region = None
         self.config = Config()
 
-        self.key_id = self.config['cloudmesh.cloud.aws.credentials.EC2_ACCESS_ID']
-        self.access_key = self.config['cloudmesh.cloud.aws.credentials.EC2_SECRET_KEY']
+        self.key_id = self.config[
+            'cloudmesh.cloud.aws.credentials.EC2_ACCESS_ID']
+        self.access_key = self.config[
+            'cloudmesh.cloud.aws.credentials.EC2_SECRET_KEY']
         self.region = self.config['cloudmesh.cloud.aws.credentials.region']
-
 
         self.client = boto3.client(
             service,
@@ -34,7 +36,6 @@ class Provider(object):
     #                 result += [states[option]]
     #     return result
 
-
     def update_dict(self, d):
         d["cm"] = {
             "kind": "redshift",
@@ -46,10 +47,11 @@ class Provider(object):
     def update_status(self, results=None, name=None, status=None):
         return self.update_dict(
             {"cloud": "aws",
-            "kind": "redshift",
-            "cluster": results,
-            "name": name,
-            "status": status})
+             "kind": "redshift",
+             "cluster": results,
+             "name": name,
+             "status": status})
+
     #
     # BUG: all dicts that go in teh db must be updated woth update_dict
     #      afterthat the @DatabaseUpdate will work
@@ -64,6 +66,7 @@ class Provider(object):
                 return "Cluster not found"
             else:
                 return "Unexpected error: %s" % e
+
     #
     # BUG: all dicts that go in teh db must be updated woth update_dict
     #      afterthat the @DatabaseUpdate will work
@@ -71,7 +74,8 @@ class Provider(object):
     # @DatabaseUpdate()
     def describe_cluster(self, args):
         try:
-            results = self.client.describe_clusters(ClusterIdentifier=args['CLUSTER_ID'])
+            results = self.client.describe_clusters(
+                ClusterIdentifier=args['CLUSTER_ID'])
             return results['Clusters']
         # except client.exceptions.ClusterNotFoundException as e:
         #     print("Cluster not found")
@@ -86,13 +90,14 @@ class Provider(object):
                 return "Cluster not found"
             else:
                 return "Unexpected error: %s" % e
+
     #
     # BUG: all dicts that go in teh db must be updated woth update_dict
     #      afterthat the @DatabaseUpdate will work
 
     @DatabaseUpdate()
     def create_single_node_cluster(self, args):
-        if args.get('CLUSTER_TYPE') != None:
+        if args.get('CLUSTER_TYPE') is not None:
             cluster_type = args['CLUSTER_TYPE']
         else:
             cluster_type = 'single-node'
@@ -118,7 +123,7 @@ class Provider(object):
     @DatabaseUpdate()
     def create_multi_node_cluster(self, args):
 
-        if args.get('CLUSTER_TYPE') != None:
+        if args.get('CLUSTER_TYPE') is not None:
             cluster_type = args['CLUSTER_TYPE']
         else:
             cluster_type = 'multi-node'
@@ -140,19 +145,19 @@ class Provider(object):
                                   name=args['CLUSTER_ID'],
                                   status="Creating")
 
-
     @DatabaseUpdate()
     def delete_cluster(self, args):
         results = self.client.delete_cluster(
             ClusterIdentifier=args['CLUSTER_ID'],
             SkipFinalClusterSnapshot=False,
-            FinalClusterSnapshotIdentifier=args['CLUSTER_ID'] + str(uuid.uuid1()),
+            FinalClusterSnapshotIdentifier=args['CLUSTER_ID'] + str(
+                uuid.uuid1()),
             FinalClusterSnapshotRetentionPeriod=2
         )
         return self.update_status(results=results,
                                   name=args['CLUSTER_ID'],
                                   status="Deleting")
-        )
+
     @DatabaseUpdate()
     def resize_cluster_node_count(self, args):
         results = self.client.modify_cluster(
@@ -165,7 +170,7 @@ class Provider(object):
                                   name=args['CLUSTER_ID'],
                                   status="resizing")
 
-    # @DatabaseUpdate()
+    @DatabaseUpdate()
     def resize_cluster_to_multi_node(self, args):
         results = self.client.modify_cluster(
             ClusterIdentifier=args['CLUSTER_ID'],
@@ -178,8 +183,7 @@ class Provider(object):
                                   name=args['CLUSTER_ID'],
                                   status="Changing node count")
 
-
-    # @DatabaseUpdate()
+    @DatabaseUpdate()
     def resize_cluster_node_types(self, args):
         results = self.client.modify_cluster(
             ClusterIdentifier=args['CLUSTER_ID'],
@@ -190,8 +194,7 @@ class Provider(object):
                                   name=args['CLUSTER_ID'],
                                   status="Changing node types")
 
-
-    # @DatabaseUpdate()
+    @DatabaseUpdate()
     def modify_cluster(self, args):
         VERBOSE("in modify")
         results = self.client.modify_cluster(
@@ -202,8 +205,7 @@ class Provider(object):
                                   name=args['CLUSTER_ID'],
                                   status="Modifying password")
 
-
-    # @DatabaseUpdate()
+    @DatabaseUpdate()
     def rename_cluster(self, args):
         VERBOSE("in rename")
         results = self.client.modify_cluster(
