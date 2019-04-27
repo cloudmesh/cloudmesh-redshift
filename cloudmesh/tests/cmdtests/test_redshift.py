@@ -14,6 +14,10 @@ from io import StringIO
 
 doc = RedshiftCommand.__doc__
 
+#
+# you could have used our simple run methods from
+# from cloudmehs.common.run.file.run import run
+# r = run("cms redshift describe")
 
 @contextmanager
 def captured_output():
