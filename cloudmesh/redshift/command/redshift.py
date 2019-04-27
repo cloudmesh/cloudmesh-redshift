@@ -71,6 +71,9 @@ class RedshiftCommand(PluginCommand):
             redshift delete CLUSTER_ID
                 Delete the cluster
 
+            Now that we have a redhift cluster we can interface with it
+
+                FUNCTIONALITY TBD
         """
 
 
