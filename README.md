@@ -16,5 +16,53 @@
 * Develop corresponding REST APIs using OpenAPI
 * It is demonstarted using redshift
 
+## What is redshift
+
+:o: reword the section in proper sections e.g. no questions, so that it does not look like an FAQ
+
+## How is it different or the same to other databases
+
+## How do I get an AWS account
+
+see our manual, you do not have to develop, find link
+
+## Command line interface
+
+### How do I set up a database with cms
+
+provide a concrete example hwhile using your functions
+
+### How do I add a schema for the database or modify one
+
+### How do I add data to the database
+
+### How do I conduct queries
+
+## Open API interface
+
+### How do I set up a database with cms
+
+provide a concrete example hwhile using your functions
+
+### How do I add a schema for the database or modify one
+
+### How do I add data to the database
+
+### How do I conduct queries
+
+## Benchmarks
+
+### Benchmarks Commandline Interface
+
+### Benchmarks OpenAPI Interface
+
+
+
+
+
+
+
+
+
 
 
