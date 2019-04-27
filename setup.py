@@ -28,8 +28,7 @@ def readfile(filename):
 # add minimum requirements here
 #
 requiers = """
-psutil
-pygments
+boto3
 """.split("\n")
 
 # dependency_links = ['http://github.com/nicolaiarocci/eve.git@develop']
