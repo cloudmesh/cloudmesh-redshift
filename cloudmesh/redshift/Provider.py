@@ -3,9 +3,7 @@ import uuid
 import boto3
 from botocore.exceptions import ClientError
 from cloudmesh.DEBUG import VERBOSE
-
-# from cloudmesh.mongo.DataBaseDecorator import DatabaseUpdate
-#
+from cloudmesh.mongo.DataBaseDecorator import DatabaseUpdate
 
 class Provider(object):
 
@@ -19,6 +17,7 @@ class Provider(object):
         self.key_id = self.config['cloudmesh.cloud.aws.credentials.EC2_ACCESS_ID']
         self.access_key = self.config['cloudmesh.cloud.aws.credentials.EC2_SECRET_KEY']
         self.region = self.config['cloudmesh.cloud.aws.credentials.region']
+
 
         self.client = boto3.client(
             service,
@@ -35,6 +34,26 @@ class Provider(object):
     #                 result += [states[option]]
     #     return result
 
+
+    def update_dict(self, d):
+        d["cm"] = {
+            "kind": "redshift",
+            "name": "redshift",
+            "cloud": "aws",
+        }
+        return d
+
+    def update_status(self, results=None, name=None, status=None):
+        return self.update_dict(
+            {"cloud": "aws",
+            "kind": "redshift",
+            "cluster": results,
+            "name": name,
+            "status": status})
+    #
+    # BUG: all dicts that go in teh db must be updated woth update_dict
+    #      afterthat the @DatabaseUpdate will work
+
     # @DatabaseUpdate()
     def describe_clusters(self, args):
         try:
@@ -45,6 +64,9 @@ class Provider(object):
                 return "Cluster not found"
             else:
                 return "Unexpected error: %s" % e
+    #
+    # BUG: all dicts that go in teh db must be updated woth update_dict
+    #      afterthat the @DatabaseUpdate will work
 
     # @DatabaseUpdate()
     def describe_cluster(self, args):
@@ -64,8 +86,11 @@ class Provider(object):
                 return "Cluster not found"
             else:
                 return "Unexpected error: %s" % e
+    #
+    # BUG: all dicts that go in teh db must be updated woth update_dict
+    #      afterthat the @DatabaseUpdate will work
 
-    # @DatabaseUpdate()
+    @DatabaseUpdate()
     def create_single_node_cluster(self, args):
         if args.get('CLUSTER_TYPE') != None:
             cluster_type = args['CLUSTER_TYPE']
@@ -86,13 +111,11 @@ class Provider(object):
             Encrypted=False
         )
 
-        return {"cloud": "aws",
-                "kind": "redshift",
-                "cluster": results,
-                "name": args['CLUSTER_ID'],
-                "status": "Creating"}
+        return self.update_status(results=results,
+                                  name=args['CLUSTER_ID'],
+                                  status="Creating")
 
-    # @DatabaseUpdate()
+    @DatabaseUpdate()
     def create_multi_node_cluster(self, args):
 
         if args.get('CLUSTER_TYPE') != None:
@@ -113,11 +136,12 @@ class Provider(object):
             PubliclyAccessible=True,
             Encrypted=False
         )
+        return self.update_status(results=results,
+                                  name=args['CLUSTER_ID'],
+                                  status="Creating")
 
-        return {"cloud": "aws", "kind": "redshift", "cluster": results, "name": args['CLUSTER_ID'],
-                "status": "Creating"}
 
-    # @DatabaseUpdate()
+    @DatabaseUpdate()
     def delete_cluster(self, args):
         results = self.client.delete_cluster(
             ClusterIdentifier=args['CLUSTER_ID'],
@@ -125,11 +149,11 @@ class Provider(object):
             FinalClusterSnapshotIdentifier=args['CLUSTER_ID'] + str(uuid.uuid1()),
             FinalClusterSnapshotRetentionPeriod=2
         )
-
-        return {"cloud": "aws", "kind": "redshift", "cluster": results, "name": args['CLUSTER_ID'],
-                "status": "Deleting"}
-
-    # @DatabaseUpdate()
+        return self.update_status(results=results,
+                                  name=args['CLUSTER_ID'],
+                                  status="Deleting")
+        )
+    @DatabaseUpdate()
     def resize_cluster_node_count(self, args):
         results = self.client.modify_cluster(
             ClusterIdentifier=args['CLUSTER_ID'],
@@ -137,8 +161,9 @@ class Provider(object):
             NumberOfNodes=int(args['nodes']),
         )
 
-        return {"cloud": "aws", "kind": "redshift", "cluster": results, "name": args['CLUSTER_ID'],
-                "status": "Resizing"}
+        return self.update_status(results=results,
+                                  name=args['CLUSTER_ID'],
+                                  status="resizing")
 
     # @DatabaseUpdate()
     def resize_cluster_to_multi_node(self, args):
@@ -149,8 +174,10 @@ class Provider(object):
             NodeType=args['nodetype']
         )
 
-        return {"cloud": "aws", "kind": "redshift", "cluster": results, "name": args['CLUSTER_ID'],
-                "status": "Changing node count"}
+        return self.update_status(results=results,
+                                  name=args['CLUSTER_ID'],
+                                  status="Changing node count")
+
 
     # @DatabaseUpdate()
     def resize_cluster_node_types(self, args):
@@ -159,12 +186,10 @@ class Provider(object):
             NodeType=args['nodetype'],
             NumberOfNodes=int(args['nodes'])
         )
+        return self.update_status(results=results,
+                                  name=args['CLUSTER_ID'],
+                                  status="Changing node types")
 
-        return {"cloud": "aws",
-                "kind": "redshift",
-                "cluster": results,
-                "name": args['CLUSTER_ID'],
-                "status": "Changing node types"}
 
     # @DatabaseUpdate()
     def modify_cluster(self, args):
@@ -173,12 +198,10 @@ class Provider(object):
             ClusterIdentifier=args['CLUSTER_ID'],
             MasterUserPassword=args['newpass']
         )
+        return self.update_status(results=results,
+                                  name=args['CLUSTER_ID'],
+                                  status="Modifying password")
 
-        return {"cloud": "aws",
-                "kind": "redshift",
-                "cluster": results,
-                "name": args['CLUSTER_ID'],
-                "status": "Modifying password"}
 
     # @DatabaseUpdate()
     def rename_cluster(self, args):
@@ -187,13 +210,9 @@ class Provider(object):
             ClusterIdentifier=args['CLUSTER_ID'],
             NewClusterIdentifier=args['newid'],
         )
-
-        return {"cloud": "aws",
-                "kind": "redshift",
-                "cluster": results,
-                "name": args['CLUSTER_ID'],
-                "status": "Renaming"}
-
+        return self.update_status(results=results,
+                                  name=args['CLUSTER_ID'],
+                                  status="Renaming")
 
         # {'describe': False, 'CLUSTER_ID': 'cl13',
         #  'create': False, 'DB_NAME': None, 'USER_NAME': None, 'PASSWD': None, '--nodetype': 'dc1.large',
