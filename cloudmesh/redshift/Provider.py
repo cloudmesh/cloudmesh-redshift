@@ -221,3 +221,7 @@ class Provider(object):
         #  'delete': False,
         #  'type': 'single-node', 'nodetype': 'dc1.large', 'nodes': '1', 'newid': 'cl14', 'newpass': None}
         #
+
+    #
+    # BUG functiosnto create the db and to interact with it through a query are missing
+    #
