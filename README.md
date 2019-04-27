@@ -14,7 +14,7 @@
 
 * In the CloudMesh/CMD5 CLI, develop a set of REDSHIFT commands, and commands specific to databases, like REDSHIFT. Examples could to CLUSTER CREATE, CLUSTER DELETE, CLUSTER DESCRIBE, 
 * Develop corresponding REST APIs using OpenAPI
-* It is demonstarted using a redshift
+* It is demonstarted using redshift
 
 
 
