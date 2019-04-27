@@ -1,5 +1,7 @@
 # Develop  REST front end to the major cloud Database -- AWS RedShift 
 
+:o: this read me is incomplete
+
 ## Motivation
 
 * Understand the construction of REST APIs, and Open API
