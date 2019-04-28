@@ -47,7 +47,7 @@ class TestRedshiftCommand(RedshiftCommand):
         with captured_output() as (out, err):
             sys.stdout.write(r.do_redshift('describe'))
             output = out.getvalue().strip()
-            assert 'redshift-cluster-2' in output
+            assert 'my-cl1' in output
         # pass
 
     def test_describe_non_existent_cluster(self):
@@ -66,7 +66,7 @@ class TestRedshiftCommand(RedshiftCommand):
         with captured_output() as (out, err):
             print(r.do_redshift('describe redshift-cluster-2'))
             output = out.getvalue().strip()
-            assert 'redshift-cluster-2' in output
+            assert 'my-cl1' in output
         # pass
 
     def test_delete_non_existing_cluster(self):
