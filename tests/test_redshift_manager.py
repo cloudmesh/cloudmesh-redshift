@@ -1,6 +1,7 @@
 from cloudmesh.redshift.Provider import Provider
-
+from cloudmesh.common.StopWatch import StopWatch
 import pytest
+
 
 
 @pytest.mark.incremental
@@ -10,11 +11,15 @@ class TestRedshiftAPIProvider():
 
     # @pytest.mark.skip(reason="no way of currently testing this")
     def test_describe_clusters(self):
+        StopWatch.start("Provider")
         m = Provider()
+        StopWatch.stop("Provider")
         print(m.describe_clusters(args={}))
 
     def test_describe_cluster(self):
+        StopWatch.start("describe cluster")
         m = Provider()
+        StopWatch.stop("describe cluster")
         print(m.describe_cluster(args={'CLUSTER_ID': 'cl2'}))
         # no assertion
         assert False
@@ -70,3 +75,6 @@ class TestRedshiftAPIProvider():
         # pass
         # no assertion
         assert False
+
+    def test_benchmark(self):
+        StopWatch.benchmark()
