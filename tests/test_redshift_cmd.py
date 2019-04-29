@@ -71,73 +71,81 @@ class TestRedshiftCommand(RedshiftCommand):
 
     def test_delete_non_existing_cluster(self):
         print("Delete non existing")
+        raise NotImplementedError
         # r = RedshiftCommand()
         # with captured_output() as (out, err):
         #     print(r.do_redshift('delete cl2'))
         #     output = out.getvalue().strip()
         #     assert 'Cluster not found' in  output
-        pass
+        assert False
 
     def test_delete_existing_cluster(self):
         print("Delete existing")
+        raise NotImplementedError
         # r = RedshiftCommand()
         # with captured_output() as (out, err):
         #     print(r.do_redshift('delete redshift-cluster-2'))
         #     output = out.getvalue().strip()
         #     assert 'final-snapshot' in  output
-        pass
+        assert False
 
     def test_change_password(self):
         print("change cluster password")
+        raise NotImplementedError
         # r = RedshiftCommand()
         # with captured_output() as (out, err):
         #     print(r.do_redshift('modify cl11 --newpass MyPassword321'))
         #     output = out.getvalue().strip()
         #     assert 'PendingModifiedValues' in  output
-        pass
+        assert False
 
     def test_rename_cluster(self):
         print("rename cluster")
+        raise NotImplementedError
         # r = RedshiftCommand()
         # with captured_output() as (out, err):
         #     print(r.do_redshift('modify cl11 --newid cl12'))
         #     output = out.getvalue().strip()
         #     assert 'renaming' in output
-        pass
+        assert False
 
     def test_create_single_node_cluster(self):
         print("create single node cluster")
+        raise NotImplementedError
         # r = RedshiftCommand()
         # with captured_output() as (out, err):
         #     print(r.do_redshift('create my-cl1 db1 awsuser AWSPassword321 --nodetype=dc2.large --type=single-node'))
         #     output = out.getvalue().strip()
         #     assert 'creating' in output
-        pass
+        assert False
 
     def test_create_multi_node_cluster(self):
         print("create multi node cluster")
+        raise NotImplementedError
         # r = RedshiftCommand()
         # with captured_output() as (out, err):
         #     print(r.do_redshift('create my-cl2 db1 awsuser AWSPassword321 --nodetype=dc2.large --type=multi-node --nodes=2'))
         #     output = out.getvalue().strip()
         #     assert 'creating' in output
-        pass
+        assert False
 
     def test_resize_cluster_node_count(self):
         print("resizing cluster")
+        raise NotImplementedError
         # r = RedshiftCommand()
         # with captured_output() as (out, err):
         #     print(r.do_redshift('resize my-cl11 --type='multi-node' --nodes=2))
         #     output = out.getvalue().strip()
         #     assert 'resizing' in output
-        pass
+        assert False
 
     def test_resize_node_type(self):
         print("change node type : ")
+        raise NotImplementedError
         # NOTE: Mandatory: Need to specify count of nodes, same as count of nodes in cluster
         # r = RedshiftCommand()
         # with captured_output() as (out, err):
         #     print(r.do_redshift('resize my-cl21 --nodetype='ds2.xlarge' --nodes=2'))
         #     output = out.getvalue().strip()
         #     assert 'resizing' in output
-        pass
+        assert False
