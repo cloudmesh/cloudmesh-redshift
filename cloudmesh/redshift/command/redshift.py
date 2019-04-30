@@ -206,7 +206,7 @@ class RedshiftCommand(PluginCommand):
             try:
                 if arguments.get('empcount'):
                     print("in empcount")
-                    arguments['QUERYTEXT'] = 'SELECT COUNT(*) FROM emp;'
+                    arguments['querytext'] = 'SELECT COUNT(*) FROM emp;'
                     result = redshift.runselectquery_text(arguments)
                 elif arguments.get('querytext'):
                     print("in querytext")
