@@ -1,4 +1,4 @@
-# Cloudmesh CLI and REST access to Databases
+# Cloudmesh CLI and REST access to Cloud Data Warehouses
 
 
 :o: this read me is incomplete
@@ -16,39 +16,144 @@
 * Develop corresponding REST APIs using OpenAPI
 * It is demonstarted using redshift
 
-## What is redshift
+## Introduction to AWS Redshift
 
-:o: reword the section in proper sections e.g. no questions, so that it does not look like an FAQ
+RedShift is a Cloud Data Warehouse. It is a managed service, with a multi-node MPP (Massively Parallel Processing) architecture, and capable of scaling to many nodes. 
 
-## How is it different or the same to other databases
+## Comparable Cloud Data Warehouses
+Comparable Cloud Data Warehouses are SnowFlake, and Azure SQL Data Warehouse.
 
-## How do I get an AWS account
-
+## Getting an AWS account
+(todo)
 see our manual, you do not have to develop, find link
 
 ## Command line interface
 
-### How do I set up a database with cms
+### Creating a cluster and a database with cms
 
-provide a concrete example hwhile using your functions
+Here is an example of a single-node cluster
 
-### How do I add a schema for the database or modify one
+`cms redshift create my-cl1 db1 awsuser AWSPassword321 --nodetype=dc2.large --type=single-node`
 
-### How do I add data to the database
+Similarly, for multi-node
 
-### How do I conduct queries
+`cms redshift create my-cl2 db1 awsuser AWSPassword321 --nodetype=dc2.large --type=multi-node --nodes=3`
 
-## Open API interface
+### Viewing details of the cluster
+To view all existing clusters
 
-### How do I set up a database with cms
+`cms redshift describe`
 
-provide a concrete example hwhile using your functions
+To view details of a specific cluster
 
-### How do I add a schema for the database or modify one
+`cms redshift describe my-cl3`
 
-### How do I add data to the database
+### Modifying the cluster
 
-### How do I conduct queries
+#### Changing the password
+`cms redshift modify cl11 --newpass MyPassword321`
+
+#### Renaming the cluster
+`cms redshift modify cl11 --newid cl12`
+
+#### Resizing the node count
+`cms redshift resize my-cl11 --type='multi-node' --nodes=4`
+
+#### Resizing the node types making up the cluster
+`cms redshift resize my-cl21 --nodetype='ds2.xlarge' --nodes=2`
+
+### Deleting the cluster
+
+### Creating a demo schema
+`cms redshift demoschema db awsuser AWSPass321 cl3.xxxxxx.us-west-2.redshift.amazonaws.com 5439 --createschema`
+
+### Deleting the demo schema
+`cms redshift demoschema db awsuser AWSPass321 cl3.xxxxxx.us-west-2.redshift.amazonaws.com 5439 --deleteschema`
+
+### Adding data to the database
+Data can be added to the cluster using an import, or running insert statements. 
+
+The demo schema command above also includes some INSERTs to populate the schema tables.
+
+### Querying the data
+
+To query the demo schema table EMP,
+
+`cms redshift runquery db awsuser AWSPass321 cl3.xxxxxx.us-west-2.redshift.amazonaws.com 5439 --empcount`
+
+To run any query on EMP
+
+`cms redshift runquery db awsuser AWSPass321 cl3.ced9iqbk50ks.us-west-2.redshift.amazonaws.com 5439 --querytext='"select empname from emp where empid=20;"'`
+
+
+
+## Open API interface (TODO)
+
+### Creating a cluster and a database with cms APIs
+
+Here is an example of a single-node cluster
+
+`curl -X POST "http://localhost:8080/api/redshift/v1/cluster/cl123?dbName=db1&masterUserName=awsuser1&passWord=AWSPassWord1&nodeType=dc2.large&clusterType=single-node" -H "accept: application/json"`
+
+Similarly, for multi-node
+
+`curl -X POST "http://localhost:8080/api/redshift/v1/cluster/cl123?dbName=db1&masterUserName=awsuser1&passWord=AWSPassWord1&nodeType=dc2.large&clusterType=multi-node&nodeCount=2" -H "accept: application/json"`
+
+### Viewing details of the cluster
+
+To view all existing clusters
+
+`curl -X GET "http://localhost:8080/api/redshift/v1/clusters" -H "accept: application/json"`
+
+To view details of a specific cluster
+
+`curl -X GET "http://localhost:8080/api/redshift/v1/cluster/123" -H "accept: application/json"`
+
+### Modifying the cluster
+
+#### Changing the password
+
+`curl -X PATCH "http://localhost:8080/api/redshift/v1/cluster/cl123/changepassword?newPass=PassAWSword321" -H "accept: application/json"`
+
+#### Renaming the cluster
+
+`curl -X PATCH "http://localhost:8080/api/redshift/v1/cluster/cl123/rename?newId=cl456" -H "accept: application/json"`
+
+#### Resizing the node count
+
+`curl -X PATCH "http://localhost:8080/api/redshift/v1/cluster/cl123/resize?clusterType=multi-node&nodeCount=3&nodeType=dc2.large" -H "accept: application/json"`
+
+#### Resizing the node types making up the cluster
+
+`curl -X PATCH "http://localhost:8080/api/redshift/v1/cluster/cl123/changenodetype?clusterType=multi-node&nodeType=ds2.xlarge" -H "accept: application/json"`
+
+### Deleting a cluster
+
+`curl -X DELETE "http://localhost:8080/api/redshift/v1/cluster/cl123" -H "accept: application/json"`
+
+### Creating a demo schema
+
+`cms redshift demoschema db awsuser AWSPass321 cl3.xxxxxx.us-west-2.redshift.amazonaws.com 5439 --createschema`
+
+### Deleting the demo schema
+
+`cms redshift demoschema db awsuser AWSPass321 cl3.xxxxxx.us-west-2.redshift.amazonaws.com 5439 --deleteschema`
+
+### Adding data to the database (TODO)
+
+Data can be added to the cluster using an import, or running insert statements. 
+
+The demo schema command above also includes some INSERTs to populate the schema tables.
+
+### Querying the data (TODO)
+
+To query the demo schema table EMP,
+
+`cms redshift runquery db awsuser AWSPass321 cl3.xxxxxx.us-west-2.redshift.amazonaws.com 5439 --empcount`
+
+To run any query on EMP
+
+`cms redshift runquery db awsuser AWSPass321 cl3.ced9iqbk50ks.us-west-2.redshift.amazonaws.com 5439 --querytext='"select empname from emp where empid=20;
 
 ## Benchmarks
 
