@@ -36,7 +36,7 @@ class RedshiftCommand(PluginCommand):
         redshift modify CLUSTER_ID [--newid=NEW_CLUSTER_ID] [--newpass=NEW_PASSWD]
         redshift delete CLUSTER_ID
         redshift demoschema DB_NAME USER_NAME PASSWD HOST PORT [--createschema | --deleteschema]
-        redshift runquery DB_NAME USER_NAME PASSWD HOST PORT [--empcount | --text=QUERYTEXT]
+        redshift runquery DB_NAME USER_NAME PASSWD HOST PORT [--empcount] [--querytext=QUERYTEXT]
 
         This command is used to interface with Amazon Web Services
         RedShift service to create a single-node, or multi-node cluster,
@@ -58,6 +58,7 @@ class RedshiftCommand(PluginCommand):
             --createschema          Create the demo schema
             --deleteschema          Delete the demo schema
             --empcount              Run the count query on employees
+            --querytext=QUERYTEXT        Specifies the text of the query to run
 
         Description:
             redshift describe CLUSTER_ID
@@ -84,13 +85,13 @@ class RedshiftCommand(PluginCommand):
             redshift demoschema DB_NAME USER_NAME PASSWD HOST PORT [--createschema | --deleteschema]
                 Create the demo EMPLOYEE  schema
 
-            redshift runquery DB_NAME USER_NAME PASSWD HOST PORT [--empcount | --text=QUERYTEXT]
+            redshift runquery DB_NAME USER_NAME PASSWD HOST PORT [--empcount | --querytext=QUERYTEXT]
                 Run the canned query, or the specified SQL
 
         """
 
         map_parameters(arguments, 'type', 'nodetype', 'nodes', 'newid', 'newpass', 'createschema',
-                       'deleteschema', 'empcount', 'text')
+                       'deleteschema', 'empcount', 'querytext')
 
         redshift = Provider()
 
@@ -207,7 +208,7 @@ class RedshiftCommand(PluginCommand):
                     print("in empcount")
                     arguments['QUERYTEXT'] = 'SELECT COUNT(*) FROM emp;'
                     result = redshift.runselectquery_text(arguments)
-                elif arguments.get('text'):
+                elif arguments.get('querytext'):
                     print("in querytext")
                     result = redshift.runselectquery_text(arguments)
                 print(result)

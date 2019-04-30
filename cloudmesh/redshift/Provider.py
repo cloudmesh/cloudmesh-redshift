@@ -325,7 +325,8 @@ class Provider(object):
 
             cur = conn.cursor()
 
-            sql = args['QUERYTEXT']
+            print(args['querytext'])
+            sql = args['querytext']
 
             try:
                 cur.execute(sql)
