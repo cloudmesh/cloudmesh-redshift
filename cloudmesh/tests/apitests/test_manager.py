@@ -15,7 +15,7 @@ class TestRedshiftAPIProvider():
 
     def test_describe_cluster(self):
         m = Provider()
-        print(m.describe_cluster(args={'CLUSTER_ID': 'cl2'}))
+        print(m.describe_cluster(args={'CLUSTER_ID': 'my-cl1'}))
 
     def test_create_single_node_cluster(self):
         m = Provider()
@@ -49,12 +49,22 @@ class TestRedshiftAPIProvider():
 
     def test_modify_cluster(self):
         m = Provider()
-        print(m.modify_cluster(
-            args={'CLUSTER_ID': 'cl12', 'newpass': 'AWSPassword123'}))
-        # pass
+        # print(m.modify_cluster(
+        #     args={'CLUSTER_ID': 'cl12', 'newpass': 'AWSPassword123'}))
+        pass
 
     def test_rename_cluster(self):
         print("rename")
+        # m = Provider()
+        # print(m.rename_cluster(args={'CLUSTER_ID': 'cl12', 'newid': 'cl13'}))
+        pass
+
+    def test_mongo(self):
+        print("In Mongo")
         m = Provider()
-        print(m.rename_cluster(args={'CLUSTER_ID': 'cl12', 'newid': 'cl13'}))
-        # pass
+        m.update_dict()
+        pass
+
+if __name__ == "__main__":
+    print("In test_manager")
+

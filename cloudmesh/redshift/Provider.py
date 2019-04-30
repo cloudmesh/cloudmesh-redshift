@@ -4,7 +4,7 @@ import boto3
 from botocore.exceptions import ClientError
 from cloudmesh.DEBUG import VERBOSE
 from cloudmesh.mongo.DataBaseDecorator import DatabaseUpdate
-
+import psycopg2
 
 class Provider(object):
 
@@ -44,23 +44,27 @@ class Provider(object):
         }
         return d
 
-    def update_status(self, results=None, name=None, status=None):
+    def update_status(self, cluster=None, results=None, name=None, status=None):
         return self.update_dict(
             {"cloud": "aws",
              "kind": "redshift",
-             "cluster": results,
+             "cluster": cluster,
              "name": name,
-             "status": status})
+             "status": status,
+             "results":results,
+             })
 
     #
     # BUG: all dicts that go in teh db must be updated woth update_dict
     #      afterthat the @DatabaseUpdate will work
 
-    # @DatabaseUpdate()
+    @DatabaseUpdate()
     def describe_clusters(self, args):
         try:
             results = self.client.describe_clusters()
-            return results['Clusters']
+            # return results['Clusters']
+            return [{"cm": {"cloud": "aws", "kind": "redshift", "name": "account"}, 'data': results['Clusters']}]
+
         except ClientError as e:
             if e.response['Error']['Code'] == 'ClusterNotFound':
                 return "Cluster not found"
@@ -71,12 +75,14 @@ class Provider(object):
     # BUG: all dicts that go in teh db must be updated woth update_dict
     #      afterthat the @DatabaseUpdate will work
 
-    # @DatabaseUpdate()
+    @DatabaseUpdate()
     def describe_cluster(self, args):
         try:
             results = self.client.describe_clusters(
                 ClusterIdentifier=args['CLUSTER_ID'])
-            return results['Clusters']
+            # return results['Clusters']
+            return [{"cm": {"cloud": "aws", "kind": "redshift", "name": args['CLUSTERID']},
+                    'data': results['Clusters']}]
         # except client.exceptions.ClusterNotFoundException as e:
         #     print("Cluster not found")
         #     return e
@@ -117,6 +123,7 @@ class Provider(object):
         )
 
         return self.update_status(results=results,
+                                  cluster=args['CLUSTER_ID'],
                                   name=args['CLUSTER_ID'],
                                   status="Creating")
 
@@ -142,6 +149,7 @@ class Provider(object):
             Encrypted=False
         )
         return self.update_status(results=results,
+                                  cluster=args['CLUSTER_ID'],
                                   name=args['CLUSTER_ID'],
                                   status="Creating")
 
@@ -155,6 +163,7 @@ class Provider(object):
             FinalClusterSnapshotRetentionPeriod=2
         )
         return self.update_status(results=results,
+                                  cluster=args['CLUSTER_ID'],
                                   name=args['CLUSTER_ID'],
                                   status="Deleting")
 
@@ -167,6 +176,7 @@ class Provider(object):
         )
 
         return self.update_status(results=results,
+                                  cluster=args['CLUSTER_ID'],
                                   name=args['CLUSTER_ID'],
                                   status="resizing")
 
@@ -180,6 +190,7 @@ class Provider(object):
         )
 
         return self.update_status(results=results,
+                                  cluster=args['CLUSTER_ID'],
                                   name=args['CLUSTER_ID'],
                                   status="Changing node count")
 
@@ -191,6 +202,7 @@ class Provider(object):
             NumberOfNodes=int(args['nodes'])
         )
         return self.update_status(results=results,
+                                  cluster=args['CLUSTER_ID'],
                                   name=args['CLUSTER_ID'],
                                   status="Changing node types")
 
@@ -202,6 +214,7 @@ class Provider(object):
             MasterUserPassword=args['newpass']
         )
         return self.update_status(results=results,
+                                  cluster=args['CLUSTER_ID'],
                                   name=args['CLUSTER_ID'],
                                   status="Modifying password")
 
@@ -213,17 +226,134 @@ class Provider(object):
             NewClusterIdentifier=args['newid'],
         )
         return self.update_status(results=results,
+                                  cluster=args['CLUSTER_ID'],
                                   name=args['CLUSTER_ID'],
                                   status="Renaming")
 
-        # {'describe': False, 'CLUSTER_ID': 'cl13',
-        #  'create': False, 'DB_NAME': None, 'USER_NAME': None, 'PASSWD': None, '--nodetype': 'dc1.large',
-        #  '--type': 'single-node', '--nodes': '1',
-        #  'resize': False, 'modify': True, '--newid': 'cl14', '--newpass': None,
-        #  'delete': False,
-        #  'type': 'single-node', 'nodetype': 'dc1.large', 'nodes': '1', 'newid': 'cl14', 'newpass': None}
-        #
+    @DatabaseUpdate()
+    def create_demo_schema(self, args):
+        VERBOSE("in create schema demo")
+        print("in create demo schema")
+        results = "Error"
+        try:
+            conn = psycopg2.connect(dbname=args['DB_NAME'], host=args['HOST'], port=args['PORT'],
+                                    user=args['USER_NAME'], password=args['PASSWD'])
 
-    #
-    # BUG functiosnto create the db and to interact with it through a query are missing
-    #
+            print("connected")
+            cur = conn.cursor()
+            sql_cr = "CREATE TABLE emp (empid INT, empname VARCHAR(80));"
+            sql_ins1 = "INSERT INTO emp values (10, 'smith');"
+            sql_ins2 = "INSERT INTO emp values (20, 'jones');"
+            sql_ins3 = "INSERT INTO emp values (30, 'scott');"
+            sql_ins4 = "INSERT INTO emp values (40, 'adams');"
+
+            try:
+                print("exec sql")
+                cur.execute(sql_cr)
+                cur.execute(sql_ins1)
+                cur.execute(sql_ins2)
+                cur.execute(sql_ins3)
+                cur.execute(sql_ins4)
+                results = "Successfully created demo schema"
+                cur.close()
+                conn.commit()
+                conn.close()
+            except Exception as err:
+                print("err executing sql")
+                print(err.code, err)
+                cur.close()
+                conn.close()
+                return self.update_status(results=results,
+                                      name=args['CLUSTER_ID'],
+                                      status="Unable to execute query")
+
+            return self.update_status(results=results,
+                                      name=args['CLUSTER_ID'],
+                                      status="Query results")
+
+        except Exception as err:
+            print("unable to connect")
+            print(err.code, err)
+            return self.update_status(results=results,
+                                      name=args['CLUSTER_ID'],
+                                      status="Unable to connect")
+    @DatabaseUpdate()
+    def delete_demo_schema(self, args):
+        VERBOSE("in delete demo")
+        print("in delete demo schema")
+        results = "Error"
+        try:
+            conn = psycopg2.connect(dbname=args['DB_NAME'], host=args['HOST'], port=args['PORT'],
+                                    user=args['USER_NAME'], password=args['PASSWD'])
+
+            cur = conn.cursor()
+            sql = "DROP TABLE emp;"
+            try:
+                cur.execute(sql)
+                results = "Successfully deleted demo schema"
+                cur.close()
+                conn.commit()
+                conn.close()
+            except Exception as err:
+                print(err.code, err)
+                cur.close()
+                conn.close()
+                return self.update_status(results=results,
+                                      name=args['CLUSTER_ID'],
+                                      status="Unable to execute query")
+
+            return self.update_status(results=results,
+                                      name=args['CLUSTER_ID'],
+                                      status="Query results")
+
+        except Exception as err:
+            print(err.code, err)
+            return self.update_status(results=results,
+                                      name=args['CLUSTER_ID'],
+                                      status="Unable to connect")
+
+
+    @DatabaseUpdate()
+    def runselectquery_text(self, args):
+        VERBOSE("in runselectquery")
+        print("In runselectquerytext")
+        print(args)
+        results = "Error"
+        try:
+            conn = psycopg2.connect(dbname=args['DB_NAME'], host=args['HOST'], port=args['PORT'],
+                                    user=args['USER_NAME'], password=args['PASSWD'])
+
+            cur = conn.cursor()
+
+            sql = args['QUERYTEXT']
+
+            try:
+                cur.execute(sql)
+                results = cur.fetchall()
+                print(results)
+                cur.close()
+                conn.close()
+            except Exception as err:
+                print("unable to execute query")
+                print(err.code, err)
+                cur.close()
+                conn.close()
+                return self.update_status(results=results,
+                                      name=args['CLUSTER_ID'],
+                                      status="Unable to execute query")
+
+            return self.update_status(results=results,
+                                      name=args['CLUSTER_ID'],
+                                      status="Query results")
+
+        except Exception as err:
+            print("unable to connect")
+            print(err.code, err)
+            return self.update_status(results=results,
+                                      name=args['CLUSTER_ID'],
+                                      status="Unable to connect")
+
+
+
+if __name__ == "__main__":
+    print("In Provider")

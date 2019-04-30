@@ -2,21 +2,21 @@ from __future__ import print_function
 from cloudmesh.shell.command import command, map_parameters
 from cloudmesh.shell.command import PluginCommand
 from cloudmesh.redshift.Provider import Provider
-from cloudmesh.common import logger
+# from cloudmesh.common import logger
 # from cloudmesh.common.Printer import Printer
 from docopt import docopt
-
+import psycopg2
 
 class RedshiftCommand(PluginCommand):
 
-    def __init__(self):
-        self.log = logger.LOGGER("redshift-manager.log")
-        # logger.LOGGING_ON(logger.LOGGER("redshift-manager.log"))
-        return
+    # def __init__(self):
+    #     self.log = logger.LOGGER("redshift-manager.log")
+    #     # logger.LOGGING_ON(logger.LOGGER("redshift-manager.log"))
+    #     return
 
-    def __del__(self):
-        # logger.LOGGING_OFF(logger.LOGGER("redshift-manager.log"))
-        return
+    # def __del__(self):
+    #     # logger.LOGGING_OFF(logger.LOGGER("redshift-manager.log"))
+    #     return
 
     def get_options(self):
         args = docopt(__doc__)
@@ -30,11 +30,13 @@ class RedshiftCommand(PluginCommand):
         ::
 
         Usage:
-        redshift describe CLUSTER_ID
+        redshift describe [CLUSTER_ID]
         redshift create CLUSTER_ID DB_NAME USER_NAME PASSWD --nodetype=NODE_TYPE [--type=TYPE] [--nodes=NODE_COUNT]
         redshift resize CLUSTER_ID [--type=TYPE] [--nodes=NODE_COUNT] [--nodetype=NODE_TYPE]
         redshift modify CLUSTER_ID [--newid=NEW_CLUSTER_ID] [--newpass=NEW_PASSWD]
         redshift delete CLUSTER_ID
+        redshift demoschema DB_NAME USER_NAME PASSWD HOST PORT [--createschema | --deleteschema]
+        redshift runquery DB_NAME USER_NAME PASSWD HOST PORT [--empcount | --text=QUERYTEXT]
 
         This command is used to interface with Amazon Web Services
         RedShift service to create a single-node, or multi-node cluster,
@@ -45,6 +47,7 @@ class RedshiftCommand(PluginCommand):
             DB_NAME                 The name of the database
             USER_NAME               The user name for the master user
             PASSWD                  The password of the master user
+            QUERYTEXT               The text of the query to execute
 
         Options:
             --type=TYPE             The type of the cluster - single-node, or multi-node. [default: single-node]
@@ -52,11 +55,14 @@ class RedshiftCommand(PluginCommand):
             --nodes=NODE_COUNT      The number of nodes in the cluster. [default: 1]
             --newid=NEW_CLUSTER_ID  The new ID of the cluster
             --newpass=NEW_PASSWD    The new password for the master user.
-
+            --createschema          Create the demo schema
+            --deleteschema          Delete the demo schema
+            --empcount              Run the count query on employees
 
         Description:
             redshift describe CLUSTER_ID
-                Gives a detailed description of the redshift cluster
+                Gives a detailed description of the redshift cluster. If the CLUSTER_ID is not specified,
+                all clusters will be listed
 
             redshift create CLUSTER_ID DB_NAME USER_NAME PASSWD NODE_TYPE [--type=TYPE] [--nodes=NODE_COUNT]
                 Creates the redshift cluster, either single-node, or multi-node, with the given DB name, master
@@ -71,14 +77,20 @@ class RedshiftCommand(PluginCommand):
             redshift delete CLUSTER_ID
                 Delete the cluster
 
-            Now that we have a redhift cluster we can interface with it
+            Now that we have a redshift cluster we can interface with it
 
                 FUNCTIONALITY TBD
+
+            redshift demoschema DB_NAME USER_NAME PASSWD HOST PORT [--createschema | --deleteschema]
+                Create the demo EMPLOYEE  schema
+
+            redshift runquery DB_NAME USER_NAME PASSWD HOST PORT [--empcount | --text=QUERYTEXT]
+                Run the canned query, or the specified SQL
+
         """
 
-
-
-        map_parameters(arguments, 'type', 'nodetype', 'nodes', 'newid', 'newpass')
+        map_parameters(arguments, 'type', 'nodetype', 'nodes', 'newid', 'newpass', 'createschema',
+                       'deleteschema', 'empcount', 'text')
 
         redshift = Provider()
 
@@ -93,6 +105,7 @@ class RedshiftCommand(PluginCommand):
         # print(args)
         if arguments.describe:
             if arguments.get('CLUSTER_ID') is None:
+                print("Blank cluster id")
                 try:
                     result = redshift.describe_clusters()
                     print(result)
@@ -177,7 +190,33 @@ class RedshiftCommand(PluginCommand):
                 print(result)
             finally:
                 return "Unhandled error"
+        elif arguments.demoschema:
+            print("in demoschema")
+            try:
+                if arguments.get('createschema'):
+                    result = redshift.create_demo_schema(arguments)
+                elif arguments.get('deleteschema'):
+                    result = redshift.delete_demo_schema(arguments)
+                print(result)
+            finally:
+                return "Unhandled error"
+        elif arguments.runquery:
+            print("In run query")
+            try:
+                if arguments.get('empcount'):
+                    print("in empcount")
+                    arguments['QUERYTEXT'] = 'SELECT COUNT(*) FROM emp;'
+                    result = redshift.runselectquery_text(arguments)
+                elif arguments.get('text'):
+                    print("in querytext")
+                    result = redshift.runselectquery_text(arguments)
+                print(result)
+            finally:
+                return "Unhandled error"
 
         else:
             print(self.get_options())
 
+
+if __name__ == "__main__":
+    print("In redshift.py")

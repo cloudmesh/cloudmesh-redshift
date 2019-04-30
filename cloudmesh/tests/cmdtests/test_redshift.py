@@ -1,10 +1,11 @@
 from cloudmesh.redshift.command.redshift import RedshiftCommand
+from cloudmesh.common.run.file import run
 
 import pytest
 
-from cloudmesh.common.util import banner
-
-from docopt import docopt
+# from cloudmesh.common.util import banner
+#
+# from docopt import docopt
 
 import sys
 from contextlib import contextmanager
@@ -37,6 +38,8 @@ class TestRedshiftCommand(RedshiftCommand):
         # args = docopt(doc, ["describe", "cl1"])
         with captured_output() as (out, err):
             sys.stdout.write(r.do_redshift('describe'))
+            # r = run("cms redshift describe cl1")
+            # print(r)
             output = out.getvalue().strip()
             assert 'Cluster not found' in output
         # pass
@@ -64,7 +67,7 @@ class TestRedshiftCommand(RedshiftCommand):
         print("Describe existing")
         r = RedshiftCommand()
         with captured_output() as (out, err):
-            print(r.do_redshift('describe redshift-cluster-2'))
+            print(r.do_redshift('describe my-cl1'))
             output = out.getvalue().strip()
             assert 'my-cl1' in output
         # pass
@@ -141,3 +144,7 @@ class TestRedshiftCommand(RedshiftCommand):
         #     output = out.getvalue().strip()
         #     assert 'resizing' in output
         pass
+
+#
+# if __name__ == "__main__":
+#     print("In test_redshift")
