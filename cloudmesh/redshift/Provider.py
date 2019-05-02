@@ -5,16 +5,18 @@ from botocore.exceptions import ClientError
 from cloudmesh.DEBUG import VERBOSE
 from cloudmesh.mongo.DataBaseDecorator import DatabaseUpdate
 import psycopg2
+import re
 
 class Provider(object):
 
-    def __init__(self, service="redshift"):
+    def __init__(self, service='redshift', config="~/.cloudmesh/cloudmesh4.yaml"):
         VERBOSE("initialize redshift manager")
         self.key_id = None
         self.access_key = None
         self.region = None
-        self.config = Config()
+        self.config = Config(config_path=config)
 
+        print(self.key_id)
         self.key_id = self.config[
             'cloudmesh.cloud.aws.credentials.EC2_ACCESS_ID']
         self.access_key = self.config[
@@ -25,7 +27,24 @@ class Provider(object):
             service,
             region_name=self.region,
             aws_access_key_id=self.key_id,
-            aws_secret_access_key=self.access_key)
+            aws_secret_access_key=self.access_key
+        )
+        # print(self.key_id)
+
+        self.ec2_client = boto3.client(
+            'ec2',
+            region_name=self.region,
+            aws_access_key_id=self.key_id,
+            aws_secret_access_key=self.access_key
+        )
+
+        self.ec2_resource = boto3.resource(
+            'ec2',
+            region_name=self.region,
+            aws_access_key_id=self.key_id,
+            aws_secret_access_key=self.access_key
+        )
+
 
     # def parse_options(self, options, states):
     #     result = []
@@ -44,11 +63,27 @@ class Provider(object):
         }
         return d
 
-    def update_status(self, cluster=None, results=None, name=None, status=None):
+    # def update_dict(self, elements, kind=None):
+    #     # this is an internal function for building dict object
+    #     d = []
+    #     for element in elements:
+    #         #entry = element.__dict__
+    #         #entry = element['objlist']
+    #         entry = element
+    #         entry["cm"] = {
+    #             "kind": "storage",
+    #             "cloud": self.cloud,
+    #             "name": entry['fileName']
+    #         }
+    #
+    #         # element.properties = element.properties.__dict__
+    #         d.append(entry)
+    #     return d
+
+    def update_status(self, results=None, name=None, status=None):
         return self.update_dict(
             {"cloud": "aws",
              "kind": "redshift",
-             "cluster": cluster,
              "name": name,
              "status": status,
              "results":results,
@@ -62,8 +97,8 @@ class Provider(object):
     def describe_clusters(self, args):
         try:
             results = self.client.describe_clusters()
-            # return results['Clusters']
-            return [{"cm": {"cloud": "aws", "kind": "redshift", "name": "account"}, 'data': results['Clusters']}]
+            print(results['Clusters'])
+            return [{"cm": {"cloud": "aws", "kind": "redshift", "name": "all"}, 'results': results['Clusters']}]
 
         except ClientError as e:
             if e.response['Error']['Code'] == 'ClusterNotFound':
@@ -80,9 +115,9 @@ class Provider(object):
         try:
             results = self.client.describe_clusters(
                 ClusterIdentifier=args['CLUSTER_ID'])
-            # return results['Clusters']
+            print(results['Clusters'])
             return [{"cm": {"cloud": "aws", "kind": "redshift", "name": args['CLUSTERID']},
-                    'data': results['Clusters']}]
+                    'results': results['Clusters']}]
         # except client.exceptions.ClusterNotFoundException as e:
         #     print("Cluster not found")
         #     return e
@@ -103,11 +138,13 @@ class Provider(object):
 
     @DatabaseUpdate()
     def create_single_node_cluster(self, args):
+        print("In single node")
         if args.get('CLUSTER_TYPE') is not None:
             cluster_type = args['CLUSTER_TYPE']
         else:
             cluster_type = 'single-node'
 
+        print(args)
         results = self.client.create_cluster(
             DBName=args['DB_NAME'],
             ClusterIdentifier=args['CLUSTER_ID'],
@@ -121,11 +158,11 @@ class Provider(object):
             PubliclyAccessible=True,
             Encrypted=False
         )
-
+        print(results)
         return self.update_status(results=results,
-                                  cluster=args['CLUSTER_ID'],
                                   name=args['CLUSTER_ID'],
                                   status="Creating")
+
 
     @DatabaseUpdate()
     def create_multi_node_cluster(self, args):
@@ -149,7 +186,6 @@ class Provider(object):
             Encrypted=False
         )
         return self.update_status(results=results,
-                                  cluster=args['CLUSTER_ID'],
                                   name=args['CLUSTER_ID'],
                                   status="Creating")
 
@@ -163,7 +199,6 @@ class Provider(object):
             FinalClusterSnapshotRetentionPeriod=2
         )
         return self.update_status(results=results,
-                                  cluster=args['CLUSTER_ID'],
                                   name=args['CLUSTER_ID'],
                                   status="Deleting")
 
@@ -176,7 +211,6 @@ class Provider(object):
         )
 
         return self.update_status(results=results,
-                                  cluster=args['CLUSTER_ID'],
                                   name=args['CLUSTER_ID'],
                                   status="resizing")
 
@@ -190,7 +224,6 @@ class Provider(object):
         )
 
         return self.update_status(results=results,
-                                  cluster=args['CLUSTER_ID'],
                                   name=args['CLUSTER_ID'],
                                   status="Changing node count")
 
@@ -202,7 +235,6 @@ class Provider(object):
             NumberOfNodes=int(args['nodes'])
         )
         return self.update_status(results=results,
-                                  cluster=args['CLUSTER_ID'],
                                   name=args['CLUSTER_ID'],
                                   status="Changing node types")
 
@@ -214,7 +246,6 @@ class Provider(object):
             MasterUserPassword=args['newpass']
         )
         return self.update_status(results=results,
-                                  cluster=args['CLUSTER_ID'],
                                   name=args['CLUSTER_ID'],
                                   status="Modifying password")
 
@@ -226,9 +257,64 @@ class Provider(object):
             NewClusterIdentifier=args['newid'],
         )
         return self.update_status(results=results,
-                                  cluster=args['CLUSTER_ID'],
                                   name=args['CLUSTER_ID'],
                                   status="Renaming")
+
+    @DatabaseUpdate()
+    def allow_access(self, args):
+        VERBOSE("in allow access")
+        desc_response = self.client.describe_clusters(
+            ClusterIdentifier=args['CLUSTER_ID']
+        )
+
+        # print(desc_response['Clusters'][0]['VpcId'])
+        vpc_id = desc_response['Clusters'][0]['VpcId']
+
+        vpc = self.ec2_resource.Vpc(vpc_id)
+
+        security_group_iterator = vpc.security_groups.all()
+        # print(security_group_iterator)
+        for s in security_group_iterator:
+            print(s)
+
+        security_group_iterator2 = vpc.security_groups.filter(
+            GroupNames=[
+                'default',
+            ]
+        )
+        print(security_group_iterator2)
+        for s2 in security_group_iterator2:
+            print(s2)
+
+        grp_id_list = re.findall(r"'(.*?)'", str(s2), re.DOTALL)
+        grp_id = grp_id_list[0]
+        # print(grp_id)
+
+        security_group = self.ec2_resource.SecurityGroup(grp_id)
+
+        sec_grp_ingress_response = security_group.authorize_ingress(
+            GroupId=grp_id,
+            IpPermissions=[
+                {
+                    'IpProtocol': 'tcp',
+                    'FromPort': 5439,
+                    'ToPort': 5439,
+                    'IpRanges': [
+                        {
+                            'CidrIp': '0.0.0.0/0',
+                            'Description': 'all ext'
+                        },
+                    ],
+                    'UserIdGroupPairs': [{'GroupId': grp_id, 'VpcId': vpc_id}]
+                }
+            ],
+        )
+        results = sec_grp_ingress_response
+        # print(sec_grp_ingress_response)
+
+        return self.update_status(results=results,
+                                  name=args['CLUSTER_ID'],
+                                  status="Allowing access")
 
     @DatabaseUpdate()
     def create_demo_schema(self, args):

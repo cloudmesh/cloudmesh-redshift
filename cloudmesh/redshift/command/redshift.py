@@ -5,7 +5,7 @@ from cloudmesh.redshift.Provider import Provider
 # from cloudmesh.common import logger
 # from cloudmesh.common.Printer import Printer
 from docopt import docopt
-import psycopg2
+# import psycopg2
 
 class RedshiftCommand(PluginCommand):
 
@@ -35,6 +35,7 @@ class RedshiftCommand(PluginCommand):
         redshift resize CLUSTER_ID [--type=TYPE] [--nodes=NODE_COUNT] [--nodetype=NODE_TYPE]
         redshift modify CLUSTER_ID [--newid=NEW_CLUSTER_ID] [--newpass=NEW_PASSWD]
         redshift delete CLUSTER_ID
+        redshift allowaccess CLUSTER_ID
         redshift demoschema DB_NAME USER_NAME PASSWD HOST PORT [--createschema | --deleteschema]
         redshift runquery DB_NAME USER_NAME PASSWD HOST PORT [--empcount] [--querytext=QUERYTEXT]
 
@@ -48,6 +49,7 @@ class RedshiftCommand(PluginCommand):
             USER_NAME               The user name for the master user
             PASSWD                  The password of the master user
             QUERYTEXT               The text of the query to execute
+
 
         Options:
             --type=TYPE             The type of the cluster - single-node, or multi-node. [default: single-node]
@@ -78,9 +80,12 @@ class RedshiftCommand(PluginCommand):
             redshift delete CLUSTER_ID
                 Delete the cluster
 
-            Now that we have a redshift cluster we can interface with it
+            Now that we have a redshift cluster, to interface with it, we need to allow access.
 
-                FUNCTIONALITY TBD
+            redshift allowaccess CLUSTER_ID
+                Configure the cluster for external (For eg. Python) access
+
+            We can now interface with the redshift cluster.
 
             redshift demoschema DB_NAME USER_NAME PASSWD HOST PORT [--createschema | --deleteschema]
                 Create the demo EMPLOYEE  schema
@@ -125,7 +130,9 @@ class RedshiftCommand(PluginCommand):
                           'DB_NAME': arguments.get('DB_NAME'),
                           'nodetype': arguments.get('nodetype'),
                           'USER_NAME': arguments.get('USER_NAME'),
-                          'PASSWD': arguments.get('PASSWD')}
+                          'PASSWD': arguments.get('PASSWD'),
+                          'nodes': arguments.get('nodes'),
+                          'CLUSTER_TYPE': arguments.get("type")}
                     result = redshift.create_single_node_cluster(d1)
                     print(result)
                 finally:
@@ -137,7 +144,8 @@ class RedshiftCommand(PluginCommand):
                           'nodetype': arguments.get('nodetype'),
                           'USER_NAME': arguments.get('USER_NAME'),
                           'PASSWD': arguments.get('PASSWD'),
-                          'nodes': arguments.get('nodes')}
+                          'nodes': arguments.get('nodes'),
+                          'CLUSTER_TYPE': arguments.get("type")}
                     result = redshift.create_multi_node_cluster(d1)
                     print(result)
                 finally:
@@ -188,6 +196,12 @@ class RedshiftCommand(PluginCommand):
         elif arguments.delete:
             try:
                 result = redshift.delete_cluster(arguments)
+                print(result)
+            finally:
+                return "Unhandled error"
+        elif arguments.allowaccess:
+            try:
+                result = redshift.allow_access(arguments)
                 print(result)
             finally:
                 return "Unhandled error"

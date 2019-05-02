@@ -30,7 +30,7 @@ paths:
       - "cluster"
       summary: "Describe all clusters"
       description: "Detailed description of all cluster attributes"
-      operationId: "cloudmesh.redshift.api.manager.describe_clusters"
+      operationId: "cloudmesh.redshift.Provider.describe_clusters"
       produces:
       - "application/json"
       responses:
@@ -46,7 +46,7 @@ paths:
       - "cluster"
       summary: "Describe cluster by ID"
       description: "Returns a single cluster description"
-      operationId: "cloudmesh.redshift.api.manager.describe_cluster"
+      operationId: "cloudmesh.redshift.Provider.describe_cluster"
       produces:
       - "application/json"
       parameters:
@@ -69,7 +69,7 @@ paths:
       - "cluster"
       summary: "Creates a cluster"
       description: ""
-      operationId: "cloudmesh.redshift.api.manager.create_multi_node_cluster"
+      operationId: "cloudmesh.redshift.Provider.create_multi_node_cluster"
       produces:
       - "application/json"
       parameters:
@@ -116,7 +116,7 @@ paths:
       - "cluster"
       summary: "Deletes a cluster"
       description: "Delete a cluster"
-      operationId: "cloudmesh.redshift.api.manager.delete_cluster"
+      operationId: "cloudmesh.redshift.Provider.delete_cluster"
       produces:
       - "application/json"
       parameters:
@@ -135,7 +135,7 @@ paths:
       - "cluster"
       summary: "Increases cluster nodes"
       description: ""
-      operationId: "cloudmesh.redshift.api.manager.resize_cluster"
+      operationId: "cloudmesh.redshift.Provider.resize_cluster"
       produces:
       - "application/json"
       parameters:
@@ -173,7 +173,7 @@ paths:
       - "cluster"
       summary: "Change  node type"
       description: ""
-      operationId: "cloudmesh.redshift.api.manager.change_node_type"
+      operationId: "cloudmesh.redshift.Provider.change_node_type"
       produces:
       - "application/json"
       parameters:
@@ -204,7 +204,7 @@ paths:
       - "cluster"
       summary: "Rename cluster"
       description: "Rename the cluster"
-      operationId: "cloudmesh.redshift.api.manager.rename_cluster"
+      operationId: "cloudmesh.redshift.Provider.rename_cluster"
       produces:
       - "application/json"
       parameters:
@@ -229,7 +229,7 @@ paths:
       - "cluster"
       summary: "Change master password"
       description: "Change the password for the cluster"
-      operationId: "cloudmesh.redshift.api.manager.chg_password"
+      operationId: "cloudmesh.redshift.Provider.chg_password"
       produces:
       - "application/json"
       parameters:
@@ -246,6 +246,26 @@ paths:
       responses:
         200:
           description: "successfully change password"
+          schema:
+            $ref: "#/definitions/RedShiftCluster"
+  /cluster/{clusterId}/allowaccess:
+    patch:
+      tags:
+      - "cluster"
+      summary: "Allow external access to cluster"
+      description: "Allow external programs (eg Python) access to the Redshift cluster for queries"
+      operationId: "cloudmesh.redshift.Provider.allow_access"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "clusterId"
+        in: "path"
+        description: "ID of cluster to allow access to"
+        required: true
+        type: "string"
+      responses:
+        200:
+          description: "successfully allowed access"
           schema:
             $ref: "#/definitions/RedShiftCluster"
 definitions:
