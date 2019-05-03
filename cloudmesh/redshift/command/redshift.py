@@ -6,6 +6,7 @@ from cloudmesh.redshift.Provider import Provider
 # from cloudmesh.common.Printer import Printer
 from docopt import docopt
 # import psycopg2
+import base64
 
 class RedshiftCommand(PluginCommand):
 
@@ -37,7 +38,9 @@ class RedshiftCommand(PluginCommand):
         redshift delete CLUSTER_ID
         redshift allowaccess CLUSTER_ID
         redshift demoschema DB_NAME USER_NAME PASSWD HOST PORT [--createschema | --deleteschema]
-        redshift runquery DB_NAME USER_NAME PASSWD HOST PORT [--empcount] [--querytext=QUERYTEXT]
+        redshift runddl DB_NAME USER_NAME PASSWD HOST PORT --ddlfile=FILE_NAME
+        redshift rundml DB_NAME USER_NAME PASSWD HOST PORT --dmlfile=FILE_NAME
+        redshift runquery DB_NAME USER_NAME PASSWD HOST PORT [--empcount] [--querytext=QUERY_TEXT]
 
         This command is used to interface with Amazon Web Services
         RedShift service to create a single-node, or multi-node cluster,
@@ -48,8 +51,8 @@ class RedshiftCommand(PluginCommand):
             DB_NAME                 The name of the database
             USER_NAME               The user name for the master user
             PASSWD                  The password of the master user
-            QUERYTEXT               The text of the query to execute
-
+            QUERY_TEXT               The text of the query to execute
+            FILE_NAME               The file containing the queries
 
         Options:
             --type=TYPE             The type of the cluster - single-node, or multi-node. [default: single-node]
@@ -59,8 +62,10 @@ class RedshiftCommand(PluginCommand):
             --newpass=NEW_PASSWD    The new password for the master user.
             --createschema          Create the demo schema
             --deleteschema          Delete the demo schema
-            --empcount              Run the count query on employees
-            --querytext=QUERYTEXT        Specifies the text of the query to run
+            --ddlfile=FILE_NAME     Specify the DDL (CREATE TABLE, ALTER TABLE, DROP TABLE) to run in the file
+            --dmlfile=FILE_NAME     Specify the DML statements (INSERT, UPDATE, DELETE) to run in the file
+            --empcount              Run the count query on employees (demo schema only)
+            --querytext=QUERY_TEXT   Specifies the text of the query to run
 
         Description:
             redshift describe CLUSTER_ID
@@ -90,13 +95,20 @@ class RedshiftCommand(PluginCommand):
             redshift demoschema DB_NAME USER_NAME PASSWD HOST PORT [--createschema | --deleteschema]
                 Create the demo EMPLOYEE  schema
 
-            redshift runquery DB_NAME USER_NAME PASSWD HOST PORT [--empcount | --querytext=QUERYTEXT]
+            redshift runddl DB_NAME USER_NAME PASSWD HOST PORT --ddlfile=FILE_NAME
+                Run the DDL statements (CREATE TABLE, ALTER TABLE, DROP TABLE) specified in the file
+
+            redshift rundml DB_NAME USER_NAME PASSWD HOST PORT --dmlfile=FILE_NAME
+                Run the DML statements (INSERT, UPDATE, DELETE) specified in the file
+
+            redshift runquery DB_NAME USER_NAME PASSWD HOST PORT [--empcount] [--querytext=QUERY_TEXT]
                 Run the canned query, or the specified SQL
 
         """
 
         map_parameters(arguments, 'type', 'nodetype', 'nodes', 'newid', 'newpass', 'createschema',
-                       'deleteschema', 'empcount', 'querytext')
+                       'deleteschema', 'empcount', 'querytext', 'ddlfile',
+                       'dmlfile')
 
         redshift = Provider()
 
@@ -110,7 +122,8 @@ class RedshiftCommand(PluginCommand):
         print(arguments)
         # print(args)
         if arguments.describe:
-            if arguments.get('CLUSTER_ID') is None:
+            cluster_id = arguments.get('CLUSTER_ID')
+            if cluster_id is None:
                 print("Blank cluster id")
                 try:
                     result = redshift.describe_clusters()
@@ -119,113 +132,192 @@ class RedshiftCommand(PluginCommand):
                     return "Unhandled error"
             else:
                 try:
-                    result = redshift.describe_cluster(arguments)
+                    result = redshift.describe_cluster(cluster_id)
                     print(result)
                 finally:
                     return "Unhandled error"
         elif arguments.create:
             if arguments.get("type") == 'single-node':
+
                 try:
-                    d1 = {'CLUSTER_ID': arguments.get('CLUSTER_ID'),
-                          'DB_NAME': arguments.get('DB_NAME'),
-                          'nodetype': arguments.get('nodetype'),
-                          'USER_NAME': arguments.get('USER_NAME'),
-                          'PASSWD': arguments.get('PASSWD'),
-                          'nodes': arguments.get('nodes'),
-                          'CLUSTER_TYPE': arguments.get("type")}
-                    result = redshift.create_single_node_cluster(d1)
+                    db_name = arguments.get('DB_NAME')
+                    cluster_id = arguments.get('CLUSTER_ID')
+                    cluster_type = arguments.get("type")
+                    node_type = arguments.get('nodetype')
+                    user_name = arguments.get('USER_NAME')
+                    passwd = arguments.get('PASSWD')
+                    node_count = int(arguments.get('nodes'))
+                    result = redshift.create_single_node_cluster(db_name, cluster_id, cluster_type, node_type, user_name, passwd)
                     print(result)
                 finally:
                     return "Unhandled error"
             else:
                 try:
-                    d1 = {'CLUSTER_ID': arguments.get('CLUSTER_ID'),
-                          'DB_NAME': arguments.get('DB_NAME'),
-                          'nodetype': arguments.get('nodetype'),
-                          'USER_NAME': arguments.get('USER_NAME'),
-                          'PASSWD': arguments.get('PASSWD'),
-                          'nodes': arguments.get('nodes'),
-                          'CLUSTER_TYPE': arguments.get("type")}
-                    result = redshift.create_multi_node_cluster(d1)
+                    db_name = arguments.get('DB_NAME')
+                    cluster_id = arguments.get('CLUSTER_ID')
+                    cluster_type = arguments.get("type")
+                    node_type = arguments.get('nodetype')
+                    user_name = arguments.get('USER_NAME')
+                    passwd = arguments.get('PASSWD')
+                    node_count = int(arguments.get('nodes'))
+                    result = redshift.create_multi_node_cluster(db_name, cluster_id, cluster_type, node_type, user_name, passwd, node_count)
                     print(result)
                 finally:
                     return "Unhandled error"
         elif arguments.resize:
             print("in resize")
             print(arguments)
-            if arguments.get('nodetype') != 'dc2.large':
+            node_type = arguments.get('nodetype')
+            cluster_id = arguments.get('CLUSTER_ID')
+            cluster_type = arguments.get("type")
+            node_count = int(arguments.get('nodes'))
+            if node_type != 'dc2.large':
                 # resizing nodes
                 # NOTE: Necessary to have right number of nodes to be passed in
-                d1 = {'CLUSTER_ID': arguments.get('CLUSTER_ID'),
-                      'type': arguments.get('type'),
-                      'nodetype': arguments.get('nodetype'),
-                      'nodes': arguments.get('nodes')}
-                # print(d1)
-                result = redshift.resize_cluster_node_types(d1)
+                result = redshift.resize_cluster_node_types(cluster_id, cluster_type, node_count)
                 print(result)
-            elif int(arguments.get('nodes')) > 1:
+            elif node_count > 1:
                 # changing type of cluster from single-node to multi-node
-                d1 = {'CLUSTER_ID': arguments.get('CLUSTER_ID'),
-                      'type': 'multi-node',
-                      'nodetype': arguments.get('nodetype'),
-                      'nodes': arguments.get('nodes')}
+                cluster_type = 'multi-node'
                 # print(d1)
-                result = redshift.resize_cluster_to_multi_node(d1)
+                result = redshift.resize_cluster_to_multi_node(cluster_id, cluster_type, node_count, node_type)
                 print(result)
             else:
                 return "Argument error"
         elif arguments.modify:
-            if arguments.get('newid') is None and arguments.get('newpass'):
+            new_id = arguments.get('newid')
+            new_pass = arguments.get('newpass')
+            cluster_id = arguments.get('CLUSTER_ID')
+
+            if new_id is None and new_pass:
                 print("in modify")
                 try:
-                    d1 = {'CLUSTER_ID': arguments.get('CLUSTER_ID'),
-                          'newpass': arguments.get('newpass')}
-                    result = redshift.modify_cluster(d1)
+                    result = redshift.modify_cluster(cluster_id, new_pass)
                     print(result)
                 finally:
                     return "Unhandled error"
-            elif arguments.get('newid') and arguments.get('newpass') is None:
+            elif new_id and new_pass is None:
                 print("in rename")
                 try:
-                    d1 = {'CLUSTER_ID': arguments.get('CLUSTER_ID'),
-                          'newid': arguments.get('newid')}
-                    result = redshift.rename_cluster(d1)
+                    result = redshift.rename_cluster(cluster_id, new_id)
                     print(result)
                 finally:
                     return "Unhandled error"
         elif arguments.delete:
+            cluster_id = arguments.get('CLUSTER_ID')
             try:
-                result = redshift.delete_cluster(arguments)
+                result = redshift.delete_cluster(cluster_id)
                 print(result)
             finally:
                 return "Unhandled error"
         elif arguments.allowaccess:
+            cluster_id = arguments.get('CLUSTER_ID')
             try:
-                result = redshift.allow_access(arguments)
+                result = redshift.allow_access(cluster_id)
                 print(result)
             finally:
                 return "Unhandled error"
         elif arguments.demoschema:
+
+            db_name = arguments.get('DB_NAME')
+            user_name = arguments.get('USER_NAME')
+            passwd = arguments.get('PASSWD')
+
+            host = arguments.get('HOST')
+            port = arguments.get('PORT')
+            if port is None:
+                port = 5439
+
+            host_list = host.split('.')
+            cluster_id = host_list[0]
             print("in demoschema")
             try:
                 if arguments.get('createschema'):
-                    result = redshift.create_demo_schema(arguments)
+                    result = redshift.create_demo_schema(cluster_id, db_name, host, port, user_name, passwd)
                 elif arguments.get('deleteschema'):
-                    result = redshift.delete_demo_schema(arguments)
+                    result = redshift.delete_demo_schema(cluster_id, db_name, host, port, user_name, passwd)
                 print(result)
+            finally:
+                return "Unhandled error"
+        elif arguments.runddl:
+            print("In run DDL")
+
+            db_name = arguments.get('DB_NAME')
+            user_name = arguments.get('USER_NAME')
+            passwd = arguments.get('PASSWD')
+
+            host = arguments.get('HOST')
+            port = arguments.get('PORT')
+            if port is None:
+                port = 5439
+            ddl_file_name = arguments.get('ddlfile')
+
+            fd = open(ddl_file_name, 'r')
+            sql_file_contents = fd.read()
+            fd.close()
+            b64_sql_file_contents = base64.b64encode(bytes(sql_file_contents, 'ascii'))
+
+            host_list = host.split('.')
+            cluster_id = host_list[0]
+            try:
+                print("in run ddl")
+                result = redshift.runddl(cluster_id, db_name, host, port, user_name, passwd, b64_sql_file_contents)
+            finally:
+                return "Unhandled error"
+
+        elif arguments.rundml:
+            print("In run DML")
+
+            db_name = arguments.get('DB_NAME')
+            user_name = arguments.get('USER_NAME')
+            passwd = arguments.get('PASSWD')
+
+            host = arguments.get('HOST')
+            port = arguments.get('PORT')
+            if port is None:
+                port = 5439
+            dml_file_name = arguments.get('dmlfile')
+
+            fd = open(dml_file_name, 'r')
+            sql_file_contents = fd.read()
+            fd.close()
+            b64_sql_file_contents = base64.b64encode(bytes(sql_file_contents,'utf-8'))
+
+            host_list = host.split('.')
+            cluster_id = host_list[0]
+            try:
+                print("in run dml")
+                result = redshift.rundml(cluster_id, db_name, host, port, user_name, passwd, b64_sql_file_contents)
             finally:
                 return "Unhandled error"
         elif arguments.runquery:
             print("In run query")
+
+            db_name = arguments.get('DB_NAME')
+            user_name = arguments.get('USER_NAME')
+            passwd = arguments.get('PASSWD')
+
+            host = arguments.get('HOST')
+            port = arguments.get('PORT')
+            if port is None:
+                port = 5439
+            emp_count = arguments.get('empcount')
+            query_text = arguments.get('querytext')
+            host_list = host.split('.')
+            cluster_id = host_list[0]
+
+            print(query_text)
             try:
-                if arguments.get('empcount'):
+                if emp_count:
                     print("in empcount")
-                    arguments['querytext'] = 'SELECT COUNT(*) FROM emp;'
-                    result = redshift.runselectquery_text(arguments)
-                elif arguments.get('querytext'):
+                    query_text = 'SELECT COUNT(*) FROM emp;'
+                    result = redshift.runselectquery_text(cluster_id, db_name, host, port, user_name, passwd, query_text)
+                elif query_text:
                     print("in querytext")
-                    result = redshift.runselectquery_text(arguments)
-                print(result)
+                    result = redshift.runselectquery_text(cluster_id, db_name, host, port, user_name, passwd, query_text)
+                    print(result)
+                else:
+                    print("error in options")
             finally:
                 return "Unhandled error"
 

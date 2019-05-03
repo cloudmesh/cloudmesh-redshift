@@ -155,6 +155,24 @@ To run any query on EMP
 
 `cms redshift runquery db awsuser AWSPass321 cl3.ced9iqbk50ks.us-west-2.redshift.amazonaws.com 5439 --querytext='"select empname from emp where empid=20;
 
+## Suggested security levels
+
+For most of the Cluster operations and DDL (Schema operations), it is suggested that the swagger API would have some "admin" level security.
+
+For example
+
+````  
+      security:
+        - OAuth2: [admin]   # Use OAuth with a different scope
+      responses:
+        '200':
+          description: OK
+        '401':
+          description: Not authenticated
+        '403':
+          description: Access token does not have the required scope
+````
+
 ## Benchmarks
 
 ### Benchmarks Commandline Interface

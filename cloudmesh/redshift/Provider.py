@@ -6,6 +6,7 @@ from cloudmesh.DEBUG import VERBOSE
 from cloudmesh.mongo.DataBaseDecorator import DatabaseUpdate
 import psycopg2
 import re
+import base64
 
 class Provider(object):
 
@@ -94,7 +95,7 @@ class Provider(object):
     #      afterthat the @DatabaseUpdate will work
 
     @DatabaseUpdate()
-    def describe_clusters(self, args):
+    def describe_clusters(self):
         try:
             results = self.client.describe_clusters()
             print(results['Clusters'])
@@ -111,12 +112,12 @@ class Provider(object):
     #      afterthat the @DatabaseUpdate will work
 
     @DatabaseUpdate()
-    def describe_cluster(self, args):
+    def describe_cluster(self, cluster_id):
         try:
             results = self.client.describe_clusters(
-                ClusterIdentifier=args['CLUSTER_ID'])
+                ClusterIdentifier=cluster_id)
             print(results['Clusters'])
-            return [{"cm": {"cloud": "aws", "kind": "redshift", "name": args['CLUSTERID']},
+            return [{"cm": {"cloud": "aws", "kind": "redshift", "name": cluster_id},
                     'results': results['Clusters']}]
         # except client.exceptions.ClusterNotFoundException as e:
         #     print("Cluster not found")
@@ -137,21 +138,19 @@ class Provider(object):
     #      afterthat the @DatabaseUpdate will work
 
     @DatabaseUpdate()
-    def create_single_node_cluster(self, args):
+    def create_single_node_cluster(self, db_name, cluster_id, cluster_type, node_type, user_name, passwd):
         print("In single node")
-        if args.get('CLUSTER_TYPE') is not None:
-            cluster_type = args['CLUSTER_TYPE']
-        else:
+        if cluster_type is None:
             cluster_type = 'single-node'
 
-        print(args)
+        # print(args)
         results = self.client.create_cluster(
-            DBName=args['DB_NAME'],
-            ClusterIdentifier=args['CLUSTER_ID'],
+            DBName=db_name,
+            ClusterIdentifier=cluster_id,
             ClusterType=cluster_type,
-            NodeType=args['nodetype'],
-            MasterUsername=args['USER_NAME'],
-            MasterUserPassword=args['PASSWD'],
+            NodeType=node_type,
+            MasterUsername=user_name,
+            MasterUserPassword=passwd,
             Port=5439,
             AllowVersionUpgrade=True,
             # NumberOfNodes=1, # needs to be supplied if ClusterType is multi-node
@@ -160,111 +159,108 @@ class Provider(object):
         )
         print(results)
         return self.update_status(results=results,
-                                  name=args['CLUSTER_ID'],
+                                  name=cluster_id,
                                   status="Creating")
 
 
     @DatabaseUpdate()
-    def create_multi_node_cluster(self, args):
+    def create_multi_node_cluster(self, db_name, cluster_id, cluster_type, node_type, user_name, passwd, node_count):
 
-        if args.get('CLUSTER_TYPE') is not None:
-            cluster_type = args['CLUSTER_TYPE']
-        else:
+        if cluster_type is None:
             cluster_type = 'multi-node'
 
         results = self.client.create_cluster(
-            DBName=args['DB_NAME'],
-            ClusterIdentifier=args['CLUSTER_ID'],
+            DBName=db_name,
+            ClusterIdentifier=cluster_id,
             ClusterType=cluster_type,
-            NodeType=args['nodetype'],
-            MasterUsername=args['USER_NAME'],
-            MasterUserPassword=args['PASSWD'],
+            NodeType=node_type,
+            MasterUsername=user_name,
+            MasterUserPassword=passwd,
             Port=5439,
             AllowVersionUpgrade=True,
-            NumberOfNodes=int(args['nodes']),
+            NumberOfNodes=node_count,
             PubliclyAccessible=True,
             Encrypted=False
         )
         return self.update_status(results=results,
-                                  name=args['CLUSTER_ID'],
+                                  name=cluster_id,
                                   status="Creating")
 
     @DatabaseUpdate()
-    def delete_cluster(self, args):
+    def delete_cluster(self, cluster_id):
         results = self.client.delete_cluster(
-            ClusterIdentifier=args['CLUSTER_ID'],
+            ClusterIdentifier=cluster_id,
             SkipFinalClusterSnapshot=False,
-            FinalClusterSnapshotIdentifier=args['CLUSTER_ID'] + str(
-                uuid.uuid1()),
+            FinalClusterSnapshotIdentifier=cluster_id + str(uuid.uuid1()),
             FinalClusterSnapshotRetentionPeriod=2
         )
         return self.update_status(results=results,
-                                  name=args['CLUSTER_ID'],
+                                  name=cluster_id,
                                   status="Deleting")
 
     @DatabaseUpdate()
-    def resize_cluster_node_count(self, args):
+    def resize_cluster_node_count(self, cluster_id, cluster_type, node_count):
         results = self.client.modify_cluster(
-            ClusterIdentifier=args['CLUSTER_ID'],
-            ClusterType=args['type'],
-            NumberOfNodes=int(args['nodes']),
+            ClusterIdentifier=cluster_id,
+            ClusterType=cluster_type,
+            NumberOfNodes=node_count,
         )
 
         return self.update_status(results=results,
-                                  name=args['CLUSTER_ID'],
+                                  name=cluster_id,
                                   status="resizing")
 
     @DatabaseUpdate()
-    def resize_cluster_to_multi_node(self, args):
+    def resize_cluster_to_multi_node(self, cluster_id, cluster_type, node_count, node_type):
         results = self.client.modify_cluster(
-            ClusterIdentifier=args['CLUSTER_ID'],
-            ClusterType=args['type'],
-            NumberOfNodes=int(args['nodes']),
-            NodeType=args['nodetype']
+            ClusterIdentifier=cluster_id,
+            ClusterType=cluster_type,
+            NumberOfNodes=node_count,
+            NodeType=node_type
         )
 
         return self.update_status(results=results,
-                                  name=args['CLUSTER_ID'],
+                                  name=cluster_id,
                                   status="Changing node count")
 
     @DatabaseUpdate()
-    def resize_cluster_node_types(self, args):
+    def resize_cluster_node_types(self, cluster_id, node_type, node_count):
         results = self.client.modify_cluster(
-            ClusterIdentifier=args['CLUSTER_ID'],
-            NodeType=args['nodetype'],
-            NumberOfNodes=int(args['nodes'])
+            ClusterIdentifier=cluster_id,
+            NodeType=node_type,
+            NumberOfNodes=node_count
         )
         return self.update_status(results=results,
-                                  name=args['CLUSTER_ID'],
+                                  name=cluster_id,
                                   status="Changing node types")
 
     @DatabaseUpdate()
-    def modify_cluster(self, args):
+    def modify_cluster(self, cluster_id, new_pass):
         VERBOSE("in modify")
         results = self.client.modify_cluster(
-            ClusterIdentifier=args['CLUSTER_ID'],
-            MasterUserPassword=args['newpass']
+            ClusterIdentifier=cluster_id,
+            MasterUserPassword=new_pass
         )
         return self.update_status(results=results,
-                                  name=args['CLUSTER_ID'],
+                                  name=cluster_id,
                                   status="Modifying password")
 
     @DatabaseUpdate()
-    def rename_cluster(self, args):
+    def rename_cluster(self, cluster_id, new_id):
         VERBOSE("in rename")
         results = self.client.modify_cluster(
-            ClusterIdentifier=args['CLUSTER_ID'],
-            NewClusterIdentifier=args['newid'],
+            ClusterIdentifier=cluster_id,
+            NewClusterIdentifier=new_id,
         )
         return self.update_status(results=results,
-                                  name=args['CLUSTER_ID'],
+                                  name=cluster_id,
                                   status="Renaming")
 
     @DatabaseUpdate()
-    def allow_access(self, args):
+    def allow_access(self, cluster_id):
         VERBOSE("in allow access")
         desc_response = self.client.describe_clusters(
-            ClusterIdentifier=args['CLUSTER_ID']
+            ClusterIdentifier=cluster_id
         )
 
         # print(desc_response['Clusters'][0]['VpcId'])
@@ -313,17 +309,17 @@ class Provider(object):
         # print(sec_grp_ingress_response)
 
         return self.update_status(results=results,
-                                  name=args['CLUSTER_ID'],
+                                  name=cluster_id,
                                   status="Allowing access")
 
     @DatabaseUpdate()
-    def create_demo_schema(self, args):
+    def create_demo_schema(self, cluster_id, db_name, host, port, user_name, passwd):
         VERBOSE("in create schema demo")
         print("in create demo schema")
         results = "Error"
         try:
-            conn = psycopg2.connect(dbname=args['DB_NAME'], host=args['HOST'], port=args['PORT'],
-                                    user=args['USER_NAME'], password=args['PASSWD'])
+            conn = psycopg2.connect(dbname=db_name, host=host, port=port,
+                                    user=user_name, password=passwd)
 
             print("connected")
             cur = conn.cursor()
@@ -346,31 +342,31 @@ class Provider(object):
                 conn.close()
             except Exception as err:
                 print("err executing sql")
-                print(err.code, err)
+                print("Error executing sql", err)
                 cur.close()
                 conn.close()
                 return self.update_status(results=results,
-                                      name=args['CLUSTER_ID'],
+                                      name=cluster_id,
                                       status="Unable to execute query")
 
             return self.update_status(results=results,
-                                      name=args['CLUSTER_ID'],
+                                      name=cluster_id,
                                       status="Query results")
 
         except Exception as err:
             print("unable to connect")
-            print(err.code, err)
+            print("Unable to connect", err)
             return self.update_status(results=results,
-                                      name=args['CLUSTER_ID'],
+                                      name=cluster_id,
                                       status="Unable to connect")
     @DatabaseUpdate()
-    def delete_demo_schema(self, args):
+    def delete_demo_schema(self,  cluster_id, db_name, host, port, user_name, passwd):
         VERBOSE("in delete demo")
         print("in delete demo schema")
         results = "Error"
         try:
-            conn = psycopg2.connect(dbname=args['DB_NAME'], host=args['HOST'], port=args['PORT'],
-                                    user=args['USER_NAME'], password=args['PASSWD'])
+            conn = psycopg2.connect(dbname=db_name, host=host, port=port,
+                                    user=user_name, password=passwd)
 
             cur = conn.cursor()
             sql = "DROP TABLE emp;"
@@ -381,38 +377,38 @@ class Provider(object):
                 conn.commit()
                 conn.close()
             except Exception as err:
-                print(err.code, err)
+                print("Unable to execute", err)
                 cur.close()
                 conn.close()
                 return self.update_status(results=results,
-                                      name=args['CLUSTER_ID'],
+                                      name=cluster_id,
                                       status="Unable to execute query")
 
             return self.update_status(results=results,
-                                      name=args['CLUSTER_ID'],
+                                      name=cluster_id,
                                       status="Query results")
 
         except Exception as err:
-            print(err.code, err)
+            print("Unable to connect", err)
             return self.update_status(results=results,
-                                      name=args['CLUSTER_ID'],
+                                      name=cluster_id,
                                       status="Unable to connect")
 
 
     @DatabaseUpdate()
-    def runselectquery_text(self, args):
+    def runselectquery_text(self, cluster_id, db_name, host, port, user_name, passwd, query_text):
         VERBOSE("in runselectquery")
         print("In runselectquerytext")
-        print(args)
+        # print(args)
         results = "Error"
         try:
-            conn = psycopg2.connect(dbname=args['DB_NAME'], host=args['HOST'], port=args['PORT'],
-                                    user=args['USER_NAME'], password=args['PASSWD'])
+            conn = psycopg2.connect(dbname=db_name, host=host, port=port,
+                                    user=user_name, password=passwd)
 
             cur = conn.cursor()
 
-            print(args['querytext'])
-            sql = args['querytext']
+            print(query_text)
+            sql = query_text
 
             try:
                 cur.execute(sql)
@@ -422,24 +418,150 @@ class Provider(object):
                 conn.close()
             except Exception as err:
                 print("unable to execute query")
-                print(err.code, err)
+                print("Unable to execute", err)
                 cur.close()
                 conn.close()
                 return self.update_status(results=results,
-                                      name=args['CLUSTER_ID'],
+                                      name=cluster_id,
                                       status="Unable to execute query")
 
             return self.update_status(results=results,
-                                      name=args['CLUSTER_ID'],
+                                      name=cluster_id,
                                       status="Query results")
 
         except Exception as err:
             print("unable to connect")
-            print(err.code, err)
+            print("Unable to connect", err)
             return self.update_status(results=results,
-                                      name=args['CLUSTER_ID'],
+                                      name=cluster_id,
+                                      status="Unable to connect")
+    @DatabaseUpdate()
+    def runddl(self, cluster_id, db_name, host, port, user_name, passwd, b64_sql_file_contents):
+        VERBOSE("in runsql - DDL")
+        print("In runsql - DDL")
+        # print(args)
+        results = "Error"
+        try:
+            conn = psycopg2.connect(dbname=db_name, host=host, port=port,
+                                    user=user_name, password=passwd)
+
+            cur = conn.cursor()
+
+            sql_file_contents = base64.b64decode(b64_sql_file_contents).decode('ascii')
+            # in the future for DML, we may need to base64.b64decode(b64_sql_file_contents).decode("utf-8", "ignore")
+            # all SQL statements (split on ';')
+            sql_stmts = sql_file_contents.split(';')
+
+            for stmt in sql_stmts:
+                # This will skip and report errors
+                # For example, if the tables do not yet exist, this will skip over
+                # the DROP TABLE commands
+                if stmt is None or len(stmt.strip()) == 0:
+                    continue
+                try:
+                    cur.execute(stmt)
+                except psycopg2.InterfaceError as err:
+                    print("error in interface:", err)
+                    conn.rollback()
+                    continue
+                except psycopg2.DatabaseError as err:
+                    print("error related to DB:", err)
+                    conn.rollback()
+                    continue
+                except psycopg2.DataError as err:
+                    print("error in data:", err)
+                    conn.rollback()
+                    continue
+                except psycopg2.OperationalError as err:
+                    print("error related to db operation:", err)
+                    conn.rollback()
+                    continue
+                except psycopg2.IntegrityError as err:
+                    print("error in data integrity:", err)
+                    conn.rollback()
+                    continue
+                except psycopg2.InternalError as err:
+                    print("error: internal, usually type of DB Error:", err)
+                    conn.rollback()
+                    continue
+                except psycopg2.ProgrammingError as err:
+                    print("error in Programming:", err)
+                    conn.rollback()
+                    continue
+                except psycopg2.NotSupportedError as err:
+                    print("error - not supported feature/operation: ", err)
+                    conn.rollback()
+                    continue
+
+            cur.close()
+            conn.close()
+            return self.update_status(results=results,
+                                  name=cluster_id,
+                                  status="SQL Execution")
+
+
+        except Exception as err:
+            print("unable to connect")
+            print("Unable to connect", err)
+            return self.update_status(results=results,
+                                      name=cluster_id,
                                       status="Unable to connect")
 
+    @DatabaseUpdate()
+    def rundml(self, cluster_id, db_name, host, port, user_name, passwd, b64_sql_file_contents):
+        VERBOSE("in runsql - DML")
+        print("In runsql - DML")
+        # print(args)
+        results = "Error"
+        try:
+            conn = psycopg2.connect(dbname=db_name, host=host, port=port,
+                                    user=user_name, password=passwd)
+
+            cur = conn.cursor()
+
+            sql_file_contents = base64.b64decode(b64_sql_file_contents).decode('utf-8')
+            # in the future for DML, we may need to base64.b64decode(b64_sql_file_contents).decode("utf-8", "ignore")
+            # all SQL statements (split on ';')
+            sql_stmts = sql_file_contents.split(';')
+
+            for stmt in sql_stmts:
+                # This will skip and report errors
+                # For example, if the tables do not yet exist, this will skip over
+                # the DROP TABLE commands
+                if stmt is None or len(stmt.strip()) == 0:
+                    continue
+                try:
+                    cur.execute(stmt)
+                except psycopg2.InterfaceError as err:
+                    print("error in interface:", err)
+                except psycopg2.DatabaseError as err:
+                    print("error related to DB:", err)
+                except psycopg2.DataError as err:
+                    print("error in data:", err)
+                except psycopg2.OperationalError as err:
+                    print("error related to db operation:", err)
+                except psycopg2.IntegrityError as err:
+                    print("error in data integrity:", err)
+                except psycopg2.InternalError as err:
+                    print("error: internal, usually type of DB Error:", err)
+                except psycopg2.ProgrammingError as err:
+                    print("error in Programming:", err)
+                except psycopg2.NotSupportedError as err:
+                    print("error - not supported feature/operation: ", err)
+
+            cur.close()
+            conn.close()
+            return self.update_status(results=results,
+                                  name=cluster_id,
+                                  status="SQL Execution")
+
+
+        except Exception as err:
+            print("unable to connect")
+            print("Unable to connect", err)
+            return self.update_status(results=results,
+                                      name=cluster_id,
+                                      status="Unable to connect")
 
 
 if __name__ == "__main__":

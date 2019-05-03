@@ -268,6 +268,163 @@ paths:
           description: "successfully allowed access"
           schema:
             $ref: "#/definitions/RedShiftCluster"
+  /cluster/{clusterId}/runDDL:
+    patch:
+      tags:
+      - "cluster"
+      summary: "Runs DDL on cluster"
+      description: "Run SQL Statements like CREATE TABLE, ALTER TABLE, DROP TABLE on the database"
+      operationId: "cloudmesh.redshift.Provider.runddl"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "clusterId"
+        in: "path"
+        description: "ID of cluster "
+        required: true
+        type: "string"
+      - name: "dbName"
+        in: "query"
+        description: "DB Name"
+        required: true
+        type: string
+      - name: "host"
+        in: "query"
+        description: "Host name"
+        required: true
+        type: "string"
+      - name: "port"
+        in: "query"
+        description: "Port number"
+        required: false
+        type: "integer"
+        default: 5439
+      - name: "userName"
+        in: "query"
+        description: "User name"
+        required: true
+        type: "string"
+      - name: "passWord"
+        in: "query"
+        description: "Password"
+        required: true
+        type: "string"
+      - name: "sql_file_contents"
+        in: "query"
+        description: "Contents of an SQL file"
+        required: true
+        type: "string"
+        format: base64
+      responses:
+        200:
+          description: "successfully ran the DDL statements"
+          schema:
+            $ref: "#/definitions/RedShiftCluster"
+  /cluster/{clusterId}/runDML:
+    patch:
+      tags:
+      - "cluster"
+      summary: "Runs DML on cluster"
+      description: "Run SQL Statements like INSERT, UPDATE, DELETE for data in the database"
+      operationId: "cloudmesh.redshift.Provider.rundml"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "clusterId"
+        in: "path"
+        description: "ID of cluster "
+        required: true
+        type: "string"
+      - name: "dbName"
+        in: "query"
+        description: "DB Name"
+        required: true
+        type: string
+      - name: "host"
+        in: "query"
+        description: "Host name"
+        required: true
+        type: "string"
+      - name: "port"
+        in: "query"
+        description: "Port number"
+        required: false
+        type: "integer"
+        default: 5439
+      - name: "userName"
+        in: "query"
+        description: "User name"
+        required: true
+        type: "string"
+      - name: "passWord"
+        in: "query"
+        description: "Password"
+        required: true
+        type: "string"
+      - name: "sql_file_contents"
+        in: "query"
+        description: "Contents of an SQL file"
+        required: true
+        type: "string"
+        format: base64
+      responses:
+        200:
+          description: "successfully ran the DML file"
+          schema:
+            $ref: "#/definitions/RedShiftCluster"
+  /cluster/{clusterId}/runQuery:
+    patch:
+      tags:
+      - "cluster"
+      summary: "Runs a query on the cluster"
+      description: "Run SQL SELECT Statement"
+      operationId: "cloudmesh.redshift.Provider.runquery"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "clusterId"
+        in: "path"
+        description: "ID of cluster "
+        required: true
+        type: "string"
+      - name: "dbName"
+        in: "query"
+        description: "DB Name"
+        required: true
+        type: string
+      - name: "host"
+        in: "query"
+        description: "Host name"
+        required: true
+        type: "string"
+      - name: "port"
+        in: "query"
+        description: "Port number"
+        required: false
+        type: "integer"
+        default: 5439
+      - name: "userName"
+        in: "query"
+        description: "User name"
+        required: true
+        type: "string"
+      - name: "passWord"
+        in: "query"
+        description: "Password"
+        required: true
+        type: "string"
+      - name: "queryText"
+        in: "query"
+        description: "SQL query"
+        required: true
+        type: "string"
+        format: base64
+      responses:
+        200:
+          description: "successfully run the query"
+          schema:
+            $ref: "#/definitions/RedShiftCluster"
+
 definitions:
   RedShiftCluster:
     type: "object"
