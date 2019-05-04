@@ -96,16 +96,26 @@ class Provider(object):
 
     @DatabaseUpdate()
     def describe_clusters(self):
+        results = {}
         try:
+            results['Clusters'] = "Error executing command"
             results = self.client.describe_clusters()
             print(results['Clusters'])
-            return [{"cm": {"cloud": "aws", "kind": "redshift", "name": "all"}, 'results': results['Clusters']}]
+            # return [{"cm": {"cloud": "aws", "kind": "redshift", "name": "all"}, 'results': results['Clusters']}]
 
+            return self.update_status(results=results,
+                                      name='all',
+                                      status="Describing")
         except ClientError as e:
             if e.response['Error']['Code'] == 'ClusterNotFound':
-                return "Cluster not found"
-            else:
-                return "Unexpected error: %s" % e
+                 results['Clusters'] = "No existing clusters"
+            return self.update_status(results=results,
+                                      name="all",
+                                      status="Describing")
+            # if e.response['Error']['Code'] == 'ClusterNotFound':
+            #     return "Cluster not found"
+            # else:
+            #     return "Unexpected error: %s" % e
 
     #
     # BUG: all dicts that go in teh db must be updated woth update_dict
@@ -113,12 +123,17 @@ class Provider(object):
 
     @DatabaseUpdate()
     def describe_cluster(self, cluster_id):
+        results = {}
         try:
+            results['Clusters'] = "Error executing command"
             results = self.client.describe_clusters(
                 ClusterIdentifier=cluster_id)
             print(results['Clusters'])
-            return [{"cm": {"cloud": "aws", "kind": "redshift", "name": cluster_id},
-                    'results': results['Clusters']}]
+            # return [{"cm": {"cloud": "aws", "kind": "redshift", "name": cluster_id},
+            #         'results': results['Clusters']}]
+            return self.update_status(results=results,
+                                      name=cluster_id,
+                                      status="Describing")
         # except client.exceptions.ClusterNotFoundException as e:
         #     print("Cluster not found")
         #     return e
@@ -129,10 +144,10 @@ class Provider(object):
         #     return "Unhandled error"
         except ClientError as e:
             if e.response['Error']['Code'] == 'ClusterNotFound':
-                return "Cluster not found"
-            else:
-                return "Unexpected error: %s" % e
-
+                results['Clusters'] = "Cluster Not Found"
+            return self.update_status(results=results,
+                                      name=cluster_id,
+                                      status="Describing")
     #
     # BUG: all dicts that go in teh db must be updated woth update_dict
     #      afterthat the @DatabaseUpdate will work
@@ -198,17 +213,17 @@ class Provider(object):
                                   name=cluster_id,
                                   status="Deleting")
 
-    @DatabaseUpdate()
-    def resize_cluster_node_count(self, cluster_id, cluster_type, node_count):
-        results = self.client.modify_cluster(
-            ClusterIdentifier=cluster_id,
-            ClusterType=cluster_type,
-            NumberOfNodes=node_count,
-        )
-
-        return self.update_status(results=results,
-                                  name=cluster_id,
-                                  status="resizing")
+    # @DatabaseUpdate()
+    # def resize_cluster_node_count(self, cluster_id, cluster_type, node_count):
+    #     results = self.client.modify_cluster(
+    #         ClusterIdentifier=cluster_id,
+    #         ClusterType=cluster_type,
+    #         NumberOfNodes=node_count,
+    #     )
+    #
+    #     return self.update_status(results=results,
+    #                               name=cluster_id,
+    #                               status="resizing")
 
     @DatabaseUpdate()
     def resize_cluster_to_multi_node(self, cluster_id, cluster_type, node_count, node_type):
@@ -288,23 +303,26 @@ class Provider(object):
 
         security_group = self.ec2_resource.SecurityGroup(grp_id)
 
-        sec_grp_ingress_response = security_group.authorize_ingress(
-            GroupId=grp_id,
-            IpPermissions=[
-                {
-                    'IpProtocol': 'tcp',
-                    'FromPort': 5439,
-                    'ToPort': 5439,
-                    'IpRanges': [
-                        {
-                            'CidrIp': '0.0.0.0/0',
-                            'Description': 'all ext'
-                        },
-                    ],
-                    'UserIdGroupPairs': [{'GroupId': grp_id, 'VpcId': vpc_id}]
-                }
-            ],
-        )
+        try:
+            sec_grp_ingress_response = security_group.authorize_ingress(
+                GroupId=grp_id,
+                IpPermissions=[
+                    {
+                        'IpProtocol': 'tcp',
+                        'FromPort': 5439,
+                        'ToPort': 5439,
+                        'IpRanges': [
+                            {
+                                'CidrIp': '0.0.0.0/0',
+                                'Description': 'all ext'
+                            },
+                        ],
+                        'UserIdGroupPairs': [{'GroupId': grp_id, 'VpcId': vpc_id}]
+                    }],
+                )
+        except ClientError as err:
+            sec_grp_ingress_response = err.response
+
         results = sec_grp_ingress_response
         # print(sec_grp_ingress_response)
 
@@ -440,7 +458,7 @@ class Provider(object):
         VERBOSE("in runsql - DDL")
         print("In runsql - DDL")
         # print(args)
-        results = "Error"
+        results = {}
         try:
             conn = psycopg2.connect(dbname=db_name, host=host, port=port,
                                     user=user_name, password=passwd)
@@ -450,7 +468,7 @@ class Provider(object):
             sql_file_contents = base64.b64decode(b64_sql_file_contents).decode('ascii')
             # in the future for DML, we may need to base64.b64decode(b64_sql_file_contents).decode("utf-8", "ignore")
             # all SQL statements (split on ';')
-            sql_stmts = sql_file_contents.split(';')
+            sql_stmts = sql_file_contents.replace("\n", "").split(';')
 
             for stmt in sql_stmts:
                 # This will skip and report errors
@@ -459,41 +477,52 @@ class Provider(object):
                 if stmt is None or len(stmt.strip()) == 0:
                     continue
                 try:
-                    cur.execute(stmt)
+                    cur.execute(stmt + ";")
+                    results[stmt] = "success"
+                    results['success'] = "ok"
                 except psycopg2.InterfaceError as err:
                     print("error in interface:", err)
+                    results['error'] = err
                     conn.rollback()
                     continue
                 except psycopg2.DatabaseError as err:
                     print("error related to DB:", err)
+                    results['error'] = err
                     conn.rollback()
                     continue
                 except psycopg2.DataError as err:
                     print("error in data:", err)
+                    results['error'] = err
                     conn.rollback()
                     continue
                 except psycopg2.OperationalError as err:
                     print("error related to db operation:", err)
+                    results['error'] = err
                     conn.rollback()
                     continue
                 except psycopg2.IntegrityError as err:
                     print("error in data integrity:", err)
+                    results['error'] = err
                     conn.rollback()
                     continue
                 except psycopg2.InternalError as err:
                     print("error: internal, usually type of DB Error:", err)
+                    results['error'] = err
                     conn.rollback()
                     continue
                 except psycopg2.ProgrammingError as err:
                     print("error in Programming:", err)
+                    results['error'] = err
                     conn.rollback()
                     continue
                 except psycopg2.NotSupportedError as err:
                     print("error - not supported feature/operation: ", err)
+                    results['error'] = err
                     conn.rollback()
                     continue
 
             cur.close()
+            conn.commit()
             conn.close()
             return self.update_status(results=results,
                                   name=cluster_id,
@@ -522,7 +551,7 @@ class Provider(object):
             sql_file_contents = base64.b64decode(b64_sql_file_contents).decode('utf-8')
             # in the future for DML, we may need to base64.b64decode(b64_sql_file_contents).decode("utf-8", "ignore")
             # all SQL statements (split on ';')
-            sql_stmts = sql_file_contents.split(';')
+            sql_stmts = sql_file_contents.replace("\n", "").split(';')
 
             for stmt in sql_stmts:
                 # This will skip and report errors
@@ -550,6 +579,7 @@ class Provider(object):
                     print("error - not supported feature/operation: ", err)
 
             cur.close()
+            conn.commit()
             conn.close()
             return self.update_status(results=results,
                                   name=cluster_id,

@@ -26,9 +26,10 @@ def execute(command):
 
 @pytest.mark.incremental
 class TestRedshiftCommand(RedshiftCommand):
-    def test_describe_all_clusters_with_no_existing(self):
+    def test_describe_all_clusters_with_no_existing(self, non_existing_cluster_id='cl111'):
         print("Describe all clusters - no existing")
-        output = execute("cms redshift describe nonexisting")
+        cmd_string = 'cms redshift describe ' + non_existing_cluster_id
+        output = execute(cmd_string)
         assert 'Cluster not found' in output
 
     def test_describe_existing_cluster_existing_clusters(self):
@@ -49,10 +50,9 @@ class TestRedshiftCommand(RedshiftCommand):
 
     def test_delete_non_existing_cluster(self):
         print("Delete non existing")
-        raise NotImplementedError
-        # 
-        #     output = execute('cms redshift delete cl2')
-        #     assert 'Cluster not found' in  output
+
+        output = execute('cms redshift delete cl2')
+        assert 'Cluster not found' in  output
         assert False
 
     def test_delete_existing_cluster(self):
