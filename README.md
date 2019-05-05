@@ -161,13 +161,12 @@ To view details of a specific cluster
 `cms redshift delete my-cl3`
 
 ### Defining or altering the schema
-'db1','awsuser','AWSPass321','cl8.ced9iqbk50ks.us-west-2.redshift.amazonaws.com',5439,
-        #            './redshiftddlfile.sql'
+
+`cms redshift runddl db1 awsuser AWSPass321 cl6.ced9iqbk50ks.us-west-2.redshift.amazonaws.com 5439 --ddlfile=./redshiftddlfile.sql`
         
 ### Inserted or modifying the data
 
-'db1','awsuser','AWSPass321','cl8.ced9iqbk50ks.us-west-2.redshift.amazonaws.com',5439,
-        #            './redshiftddlfile.sql'
+`cms redshift rundml db1 awsuser AWSPass321 cl6.ced9iqbk50ks.us-west-2.redshift.amazonaws.com 5439 --dmlfile=./redshiftdmlfile.sql`
         
 ### Querying the data
 
