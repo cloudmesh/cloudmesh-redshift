@@ -236,13 +236,9 @@ To view details of a specific cluster
 
 ### Querying the data 
 
-To query the demo schema table EMP,
+To query ,
 
-`cms redshift runquery db awsuser AWSPass321 cl3.xxxxxx.us-west-2.redshift.amazonaws.com 5439 --empcount`
-
-To run any query on EMP
-
-`cms redshift runquery db awsuser AWSPass321 cl3.ced9iqbk50ks.us-west-2.redshift.amazonaws.com 5439 --querytext='"select empname from emp where empid=20;`
+`curl -X PATCH "http://localhost:8080/cloudmesh/redshift/v1/cluster/cl8/runQuery?dbName=db1&host=cl8.ced9iqbk50ks.us-west-2.redshift.amazonaws.com&port=5439&userName=awsuser&passWord=AWSPass123&queryText=SELECT%20count(*)%20from%20EMP%3B" -H "accept: application/json"`
 
 ## Suggested security levels
 
