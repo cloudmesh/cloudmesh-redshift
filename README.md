@@ -227,12 +227,12 @@ To view details of a specific cluster
 
 ### Creating the schema
 
-`curl -X PATCH "http://localhost:8080/cloudmesh/redshift/v1/cluster/cl123/runDDL?dbName=db1&host=cl8.ced9iqbk50ks.us-west-2.redshift.amazonaws.com&port=5439&userName=awsuser&passWord=AWSPass123&sql_file_contents=b'Q1JFQVRFIFRBQkxFIEVNUChFTVBfSUQgSU5ULCBFTVBfTkFNRSBWQVJDSEFSKDEyMCkpOwpDUkVBVEUgVEFCTEUgREVQVCAoREVQVF9JRCBJTlQsIEROQU1FIFZBUkNIQVIoODApKTsKQ1JFQVRFIFRBQkxFIEFTU0lHTiAoRU1QSUQgSU5ULCBERVBUX0lEIElOVCk7Cg%3D%3D'" -H "accept: application/json"`
+`curl -X PATCH "http://localhost:8080/cloudmesh/redshift/v1/cluster/cl123/runDDL?dbName=db1&host=cl8.ced9iqbk50ks.us-west-2.redshift.amazonaws.com&port=5439&userName=awsuser&passWord=AWSPass123&sql_file_contents=Q1JFQVRFIFRBQkxFIEVNUChFTVBfSUQgSU5ULCBFTVBfTkFNRSBWQVJDSEFSKDEyMCkpOwpDUkVBVEUgVEFCTEUgREVQVCAoREVQVF9JRCBJTlQsIEROQU1FIFZBUkNIQVIoODApKTsKQ1JFQVRFIFRBQkxFIEFTU0lHTiAoRU1QSUQgSU5ULCBERVBUX0lEIElOVCk7Cg%3D%3D"`
 
 
 ### Adding data to the database 
 
-`curl -X PATCH "http://localhost:8080/cloudmesh/redshift/v1/cluster/cl123/runDML?dbName=db1&host=cl8.ced9iqbk50ks.us-west-2.redshift.amazonaws.com&port=5439&userName=awsuser&passWord=AWSPass123&sql_file_contents=b'SU5TRVJUIElOVE8gRU1QIFZBTFVFUyAoMTAsICdzbWl0aCcpOwpJTlNFUlQgSU5UTyBFTVAgVkFMVUVTICgyMCwgJ2pvbmVzJyk7CklOU0VSVCBJTlRPIEVNUCBWQUxVRVMgKDMwLCAnc2NvdHQnKTsKCg%3D%3D'" -H "accept: application/json"`
+`curl -X PATCH "http://localhost:8080/cloudmesh/redshift/v1/cluster/cl123/runDML?dbName=db1&host=cl8.ced9iqbk50ks.us-west-2.redshift.amazonaws.com&port=5439&userName=awsuser&passWord=AWSPass123&sql_file_contents=SU5TRVJUIElOVE8gRU1QIFZBTFVFUyAoMTAsICdzbWl0aCcpOwpJTlNFUlQgSU5UTyBFTVAgVkFMVUVTICgyMCwgJ2pvbmVzJyk7CklOU0VSVCBJTlRPIEVNUCBWQUxVRVMgKDMwLCAnc2NvdHQnKTsKCg%3D%3D"`
 
 ### Querying the data 
 
@@ -267,6 +267,13 @@ For example
 ````
 
 ## Benchmarks
+
+### NOTE: Performance of AWS RedShift
+
+Each admin command in redshift (create, modify, delete) takes upwards of 2 minutes to execute. Hence the tests are NOT 
+listed as test_, but instead of t1_. It is recommended to run pytest test methods individually, and not one after 
+another. The waiter method of AWS RedShift was attempted, but its behavior was not found to be predictable.
+
 
 ### Benchmarks Commandline Interface
 

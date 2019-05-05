@@ -18,57 +18,53 @@ class Test_RedShift_openapi:
     def setup(self):
         self.clusterid = ""
 
-    def test_list_clusters(self):
-        result = run(['curl', 'http://localhost:8080/api/list_clusters'], shell=False)
+    def test_describe_clusters(self):
+        result = run(['curl', 'http://localhost:8080/api/redshift/v1/clusters'], shell=False)
 
         assert result is not None
         assert result[0] == "["
 
-    def test_start_cluster(self):
-        result = run(['curl', 'http://localhost:8080/api/start?name=pytest-cluster&count=2'], shell=False)
+    def test_describe_cluster(self):
+        result = run(['curl', 'https://localhost:8080/api/redshift/v1/cluster/123'], shell=False)
 
         assert result is not None
         assert result[0] == "{"
 
-        self.clusterid = result[16:31]
-
-    def test_list_steps(self):
-        result = run(['curl', 'http://localhost:8080/api/list_steps?cluster=?{}'.format(self.clusterid)],
+    def test_create_single_node_cluster(self):
+        result = run(['curl', 'https://localhost:8080/api/redshift/v1/cluster/123?dbName=db1&masterUserName=awsuser1&passWord=AWSPassWord1&nodeType=dc2.large&clusterType=single-node'],
                      shell=False)
 
         assert result is not None
         assert result[0] == "{"
 
-    def test_describe(self):
-        result = run(['curl', 'http://localhost:8080/api/describe?cluster=?{}'.format(self.clusterid)],
+    def test_create_multi_node_cluster(self):
+        result = run(['curl', 'https://localhost:8080/api/redshift/v1/cluster/123?dbName=db1&masterUserName=awsuser1&passWord=AWSPassWord1&nodeType=dc2.large&clusterType=multi-node&nodeCount=2'],
                      shell=False)
 
         assert result is not None
         assert result[0] == "{"
 
-    def test_copy(self):
-        result = run(['curl','http://localhost:8080/api/copy?cluster=?{}&bucket=test&bucketname='
-                             'test.py'.format(self.clusterid)], shell=False)
+    def test_delete_cluster(self):
+        result = run(['curl','http://localhost:8080/api/redshift/v1/cluster/123'], shell=False)
 
         assert result is not None
         assert result[0] == "{"
 
-    def test_run(self):
-        result = run(['curl','http://localhost:8080/api/run?cluster=?{}&bucket=test&bucketname='
-                             'test.py'.format(self.clusterid)], shell=False)
+    def test_resize_cluster_node_types(self):
+        result = run(['curl','http://localhost:8080/api/redshift/v1/cluster/123/changenodetype?clusterType=multi-node&nodeType=dc2.large'], shell=False)
 
         assert result is not None
         assert result[0] == "{"
 
-    def test_list_instances(self):
-        result = run(['curl', 'http://localhost:8080/api/list_instances?cluster=?{}'.format(self.clusterid)],
+    def test_resize_cluster_to_multi_node(self):
+        result = run(['curl', 'http://localhost:8080/api/redshift/v1/cluster/123/resize?clusterType=multi-node&nodeCount=2&nodeType=dc2.large'],
                      shell=False)
 
         assert result is not None
         assert result[0] == "{"
 
-    def test_stop_cluster(self):
-        result = run(['curl', 'http://localhost:8080/api/stop?cluster=?{}'.format(self.clusterid)],
+    def test_modify_cluster(self):
+        result = run(['curl', 'http://localhost:8080/api/redshift/v1/cluster/123/changenodetype?clusterType=multi-node&nodeType=dc2.large'],
                      shell=False)
 
         assert result is not None
@@ -76,3 +72,52 @@ class Test_RedShift_openapi:
 
         self.clusterid = ""
 
+
+    def test_rename_cluster(self):
+        result = run(['curl', 'http://localhost:8080/api/redshift/v1/cluster/123/rename?newId=456'],
+                     shell=False)
+
+        assert result is not None
+        assert result[0] == "{"
+
+        self.clusterid = ""
+
+
+    def test_allow_access(self):
+        result = run(['curl', 'http://localhost:8080/cloudmesh/redshift/v1/cluster/cl123/allowaccess'],
+                     shell=False)
+
+        assert result is not None
+        assert result[0] == "{"
+
+        self.clusterid = ""
+
+
+    def test_run_ddl(self):
+        result = run(['curl', 'http://localhost:8080/cloudmesh/redshift/v1/cluster/cl123/runDDL?dbName=db1&host=cl8.ced9iqbk50ks.us-west-2.redshift.amazonaws.com&port=5439&userName=awsuser&passWord=AWSPass123&sql_file_contents=Q1JFQVRFIFRBQkxFIEVNUChFTVBfSUQgSU5ULCBFTVBfTkFNRSBWQVJDSEFSKDEyMCkpOwpDUkVBVEUgVEFCTEUgREVQVCAoREVQVF9JRCBJTlQsIEROQU1FIFZBUkNIQVIoODApKTsKQ1JFQVRFIFRBQkxFIEFTU0lHTiAoRU1QSUQgSU5ULCBERVBUX0lEIElOVCk7Cg%3D%3D'],
+                     shell=False)
+
+        assert result is not None
+        assert result[0] == "{"
+
+        self.clusterid = ""
+
+
+    def test_run_dml(self):
+        result = run(['curl', 'http://localhost:8080/cloudmesh/redshift/v1/cluster/cl123/runDML?dbName=db1&host=cl8.ced9iqbk50ks.us-west-2.redshift.amazonaws.com&port=5439&userName=awsuser&passWord=AWSPass123&sql_file_contents=SU5TRVJUIElOVE8gRU1QIFZBTFVFUyAoMTAsICdzbWl0aCcpOwpJTlNFUlQgSU5UTyBFTVAgVkFMVUVTICgyMCwgJ2pvbmVzJyk7CklOU0VSVCBJTlRPIEVNUCBWQUxVRVMgKDMwLCAnc2NvdHQnKTsKCg%3D%3D'],
+                     shell=False)
+
+        assert result is not None
+        assert result[0] == "{"
+
+        self.clusterid = ""
+
+
+    def test_run_select_query(self):
+        result = run(['curl', 'http://localhost:8080/cloudmesh/redshift/v1/cluster/cl8/runQuery?dbName=db1&host=cl8.ced9iqbk50ks.us-west-2.redshift.amazonaws.com&port=5439&userName=awsuser&passWord=AWSPass123&queryText=SELECT%20count(*)%20from%20EMP%3B'],
+                     shell=False)
+
+        assert result is not None
+        assert result[0] == "{"
+
+        self.clusterid = ""
