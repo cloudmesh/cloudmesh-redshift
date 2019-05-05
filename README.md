@@ -1,24 +1,21 @@
 # Cloudmesh CLI and REST access to Cloud Data Warehouses
 
-
-:o: this read me is incomplete
-
 ## Motivation
 
+* Understand the programmatic interface to AWS RedShift - the cloud datawarehouse from Amazon Web Services
 * Understand the construction of REST APIs, and Open API
-* Study and Implement microservice architecture 
-* Study HTTP performance tools that exist - including some that are cloud based, and some non-cloud based.
+* Study and implement microservice architecture 
 * Implement a test driven approach
 
 ## Objective
 
 * In the CloudMesh/CMD5 CLI, develop a set of REDSHIFT commands, and commands specific to databases, like REDSHIFT. Examples could to CLUSTER CREATE, CLUSTER DELETE, CLUSTER DESCRIBE, 
 * Develop corresponding REST APIs using OpenAPI
-* It is demonstarted using redshift
+* It is demonstrated using Redshift
 
 ## Introduction to AWS Redshift
 
-RedShift is a Cloud Data Warehouse. It is a managed service, with a multi-node MPP (Massively Parallel Processing) architecture, and capable of scaling to many nodes. 
+Redshift is a Cloud Data Warehouse. It is a managed service, with a multi-node MPP (Massively Parallel Processing) architecture, and capable of scaling to many nodes. 
 
 ## Comparable Cloud Data Warehouses
 Comparable Cloud Data Warehouses are SnowFlake, and Azure SQL Data Warehouse.
@@ -26,6 +23,107 @@ Comparable Cloud Data Warehouses are SnowFlake, and Azure SQL Data Warehouse.
 ## Getting an AWS account
 (todo)
 see our manual, you do not have to develop, find link
+
+## Installation and Setup
+
+You can use pip to install cloudmesh-redshift.
+
+### Install via pip
+
+```bash
+$ pip install cloudmesh-cmd5
+$ pip install cloudmesh-sys
+$ pip install cloudmesh-cloud
+$ pip install cloudmesh-redshift
+```
+
+
+### Installing from Source
+
+```bash
+$ git clone https://github.com/cloudmesh/cloudmesh-redshift.git
+$ cd cloudmesh-redshift
+$ pip install -e .
+```
+
+The external libraries needed are 
+* boto3 : Python AWS library
+* psycopg2 : Library to run queries
+* base64 : To allow base64 encoding
+* docopt : For command line access
+* re : For internal parsing
+
+### AWS Account creation and configuration
+
+To create an AWS account refer to [this page](https://cloudmesh.github.io/cloudmesh-manual/accounts/aws.html) from the manual 
+
+To configure Cloudmesh for the AWS account, here are the keys to edit.
+Configuration via "~/.cloudmesh/cloudmesh4.yaml"
+* cloudmesh.cloud.aws.credentials.EC2_ACCESS_ID
+* cloudmesh.cloud.aws.credentials.EC2_SECRET_KEY
+* cloudmesh.cloud.aws.credentials.region
+
+### MongoDB dependency
+MongoDB is used to store the collections that allow for status passing, results and so on. So, MongoDB will be needed to be started.
+```bash
+$ cms admin mongo start
+```
+
+Here is how to install MongoDB using the cloudmesh shell.
+```bash
+$ cms admin mongo install
+```
+
+
+## AWS Redshift Usage
+This set of interfaces allows you to use AWS Redshift in both admin mode and regular user mode.
+
+### Admin Usage
+Admin usage allows you to administer the AWS Redshift cluster
+* Create a cluster : 
+
+A single-node or a multi-node cluster may be created.
+
+* Allow external access to the cluster
+
+Networking changes (like allowing port access) are done, to enable access to the AWS Redshift cluster from external programming tools like Python.
+
+* Resize a cluster (nodes) :
+
+Change the number of nodes in the cluster.
+
+* Resize node sizes : 
+
+Alter the sizes of the individual nodes to other sizes  - dc2.large, ds2.xlarge, dc2.8xlarge
+
+* Rename a cluster : 
+
+Change the cluster id for the cluster.
+
+* Change cluster password :
+
+Change the master password of the cluster
+
+### Power user Usage
+These are power users who can usage allows for usage of the AWS Redshift cluster.
+
+* Run DDL (Data Definition Language) statements from a file
+
+DDL Statements (like CREATE TABLE, ALTER TABLE, DROP TABLE) can be run from a file.
+
+* Run DML (Data Manipulation Language) statements from a file
+
+DML Statements (like INSERT, UPDATE, DELETE) can be run from a file to insert or alter data in tables in the database.
+
+### User-level Usage
+User level usage allows for usage of the AWS Redshift cluster.
+
+* Run Queries against the cluster
+
+SELECT queries to retrieve data from the cluster database can be run from the command line to retrieve data.
+
+`cms redshift runquery db awsuser AWSPass321 cl3.ced9iqbk50ks.us-west-2.redshift.amazonaws.com 5439 --querytext='"select empname from emp where empid=20;"'`
+
 
 ## Command line interface
 
@@ -63,31 +161,19 @@ To view details of a specific cluster
 `cms redshift resize my-cl21 --nodetype='ds2.xlarge' --nodes=2`
 
 ### Deleting the cluster
+`cms redshift delete my-cl3`
 
 ### Creating a demo schema
 `cms redshift demoschema db awsuser AWSPass321 cl3.xxxxxx.us-west-2.redshift.amazonaws.com 5439 --createschema`
-
-### Deleting the demo schema
-`cms redshift demoschema db awsuser AWSPass321 cl3.xxxxxx.us-west-2.redshift.amazonaws.com 5439 --deleteschema`
-
-### Adding data to the database
-Data can be added to the cluster using an import, or running insert statements. 
-
-The demo schema command above also includes some INSERTs to populate the schema tables.
-
-### Querying the data
 
 To query the demo schema table EMP,
 
 `cms redshift runquery db awsuser AWSPass321 cl3.xxxxxx.us-west-2.redshift.amazonaws.com 5439 --empcount`
 
-To run any query on EMP
+### Deleting the demo schema
+`cms redshift demoschema db awsuser AWSPass321 cl3.xxxxxx.us-west-2.redshift.amazonaws.com 5439 --deleteschema`
 
-`cms redshift runquery db awsuser AWSPass321 cl3.ced9iqbk50ks.us-west-2.redshift.amazonaws.com 5439 --querytext='"select empname from emp where empid=20;"'`
-
-
-
-## Open API interface (TODO)
+## Open API interface
 
 ### Creating a cluster and a database with cms APIs
 
@@ -156,6 +242,14 @@ To run any query on EMP
 `cms redshift runquery db awsuser AWSPass321 cl3.ced9iqbk50ks.us-west-2.redshift.amazonaws.com 5439 --querytext='"select empname from emp where empid=20;
 
 ## Suggested security levels
+
+As mentioned above, there are typically 3 levels to the interface
+
+* Admin level
+* Power user level
+* User level
+
+Security for these APIs can be granted accordingly.
 
 For most of the Cluster operations and DDL (Schema operations), it is suggested that the swagger API would have some "admin" level security.
 

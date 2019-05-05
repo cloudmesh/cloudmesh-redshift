@@ -96,6 +96,7 @@ class Provider(object):
 
     @DatabaseUpdate()
     def describe_clusters(self):
+        VERBOSE("in describe clusters")
         results = {}
         try:
             results['Clusters'] = "Error executing command"
@@ -123,6 +124,7 @@ class Provider(object):
 
     @DatabaseUpdate()
     def describe_cluster(self, cluster_id):
+        VERBOSE("in describe specific cluster")
         results = {}
         try:
             results['Clusters'] = "Error executing command"
@@ -154,64 +156,91 @@ class Provider(object):
 
     @DatabaseUpdate()
     def create_single_node_cluster(self, db_name, cluster_id, cluster_type, node_type, user_name, passwd):
+        VERBOSE("in create single node cluster")
         print("In single node")
         if cluster_type is None:
             cluster_type = 'single-node'
 
-        # print(args)
-        results = self.client.create_cluster(
-            DBName=db_name,
-            ClusterIdentifier=cluster_id,
-            ClusterType=cluster_type,
-            NodeType=node_type,
-            MasterUsername=user_name,
-            MasterUserPassword=passwd,
-            Port=5439,
-            AllowVersionUpgrade=True,
-            # NumberOfNodes=1, # needs to be supplied if ClusterType is multi-node
-            PubliclyAccessible=True,
-            Encrypted=False
-        )
-        print(results)
-        return self.update_status(results=results,
-                                  name=cluster_id,
-                                  status="Creating")
-
+        results = {}
+        try:
+            results['Clusters'] = "Error creating cluster"
+            # print(args)
+            results = self.client.create_cluster(
+                DBName=db_name,
+                ClusterIdentifier=cluster_id,
+                ClusterType=cluster_type,
+                NodeType=node_type,
+                MasterUsername=user_name,
+                MasterUserPassword=passwd,
+                Port=5439,
+                AllowVersionUpgrade=True,
+                # NumberOfNodes=1, # needs to be supplied if ClusterType is multi-node
+                PubliclyAccessible=True,
+                Encrypted=False
+            )
+            print(results)
+            return self.update_status(results=results,
+                                      name=cluster_id,
+                                      status="Creating")
+        except ClientError as e:
+            results['Clusters'] = results['Clusters'] + ' : ' + e.response
+            return self.update_status(results=results,
+                                      name=cluster_id,
+                                      status="Error Creating")
 
     @DatabaseUpdate()
     def create_multi_node_cluster(self, db_name, cluster_id, cluster_type, node_type, user_name, passwd, node_count):
-
+        VERBOSE("in create multi node cluster")
         if cluster_type is None:
             cluster_type = 'multi-node'
 
-        results = self.client.create_cluster(
-            DBName=db_name,
-            ClusterIdentifier=cluster_id,
-            ClusterType=cluster_type,
-            NodeType=node_type,
-            MasterUsername=user_name,
-            MasterUserPassword=passwd,
-            Port=5439,
-            AllowVersionUpgrade=True,
-            NumberOfNodes=node_count,
-            PubliclyAccessible=True,
-            Encrypted=False
-        )
-        return self.update_status(results=results,
-                                  name=cluster_id,
-                                  status="Creating")
+        results = {}
+        try:
+            results['Clusters'] = "Error creating cluster"
+
+            results = self.client.create_cluster(
+                DBName=db_name,
+                ClusterIdentifier=cluster_id,
+                ClusterType=cluster_type,
+                NodeType=node_type,
+                MasterUsername=user_name,
+                MasterUserPassword=passwd,
+                Port=5439,
+                AllowVersionUpgrade=True,
+                NumberOfNodes=node_count,
+                PubliclyAccessible=True,
+                Encrypted=False
+            )
+            return self.update_status(results=results,
+                                      name=cluster_id,
+                                      status="Creating")
+
+        except ClientError as e:
+            results['Clusters'] = results['Clusters'] + ' : ' + e.response
+            return self.update_status(results=results,
+                                      name=cluster_id,
+                                      status="Error Creating")
 
     @DatabaseUpdate()
     def delete_cluster(self, cluster_id):
-        results = self.client.delete_cluster(
-            ClusterIdentifier=cluster_id,
-            SkipFinalClusterSnapshot=False,
-            FinalClusterSnapshotIdentifier=cluster_id + str(uuid.uuid1()),
-            FinalClusterSnapshotRetentionPeriod=2
-        )
-        return self.update_status(results=results,
-                                  name=cluster_id,
-                                  status="Deleting")
+        VERBOSE("in delete cluster")
+        results = {}
+        try:
+            results['Clusters'] = "Error deleting cluster"
+            results = self.client.delete_cluster(
+                ClusterIdentifier=cluster_id,
+                SkipFinalClusterSnapshot=False,
+                FinalClusterSnapshotIdentifier=cluster_id + str(uuid.uuid1()),
+                FinalClusterSnapshotRetentionPeriod=2
+            )
+            return self.update_status(results=results,
+                                      name=cluster_id,
+                                      status="Deleting")
+        except ClientError as e:
+            results['Clusters'] = results['Clusters'] + ' : ' + e.response
+            return self.update_status(results=results,
+                                      name=cluster_id,
+                                      status="Error Deleting")
 
     # @DatabaseUpdate()
     # def resize_cluster_node_count(self, cluster_id, cluster_type, node_count):
@@ -227,49 +256,91 @@ class Provider(object):
 
     @DatabaseUpdate()
     def resize_cluster_to_multi_node(self, cluster_id, cluster_type, node_count, node_type):
-        results = self.client.modify_cluster(
-            ClusterIdentifier=cluster_id,
-            ClusterType=cluster_type,
-            NumberOfNodes=node_count,
-            NodeType=node_type
-        )
+        VERBOSE("in resize cluster to multi-node")
+        results = {}
+        try:
+            results['Clusters'] = "Error resizing cluster to multi-node"
 
-        return self.update_status(results=results,
-                                  name=cluster_id,
-                                  status="Changing node count")
+            results = self.client.modify_cluster(
+                ClusterIdentifier=cluster_id,
+                ClusterType=cluster_type,
+                NumberOfNodes=node_count,
+                NodeType=node_type
+            )
+
+            return self.update_status(results=results,
+                                      name=cluster_id,
+                                      status="Changing node count")
+
+        except ClientError as e:
+            results['Clusters'] = results['Clusters'] + ' : ' + e.response
+            return self.update_status(results=results,
+                                      name=cluster_id,
+                                      status="Error Resizing")
 
     @DatabaseUpdate()
     def resize_cluster_node_types(self, cluster_id, node_type, node_count):
-        results = self.client.modify_cluster(
-            ClusterIdentifier=cluster_id,
-            NodeType=node_type,
-            NumberOfNodes=node_count
-        )
-        return self.update_status(results=results,
-                                  name=cluster_id,
-                                  status="Changing node types")
+        VERBOSE("in resize cluster node types")
+        results = {}
+        try:
+            results['Clusters'] = "Error resizing cluster node types"
+
+            results = self.client.modify_cluster(
+                ClusterIdentifier=cluster_id,
+                NodeType=node_type,
+                NumberOfNodes=node_count
+            )
+            return self.update_status(results=results,
+                                      name=cluster_id,
+                                      status="Changing node types")
+
+        except ClientError as e:
+            results['Clusters'] = results['Clusters'] + ' : ' + e.response
+            return self.update_status(results=results,
+                                      name=cluster_id,
+                                      status="Error Resizing")
+
 
     @DatabaseUpdate()
     def modify_cluster(self, cluster_id, new_pass):
         VERBOSE("in modify")
-        results = self.client.modify_cluster(
-            ClusterIdentifier=cluster_id,
-            MasterUserPassword=new_pass
-        )
-        return self.update_status(results=results,
-                                  name=cluster_id,
-                                  status="Modifying password")
 
+        results = {}
+        try:
+            results['Clusters'] = "Error modifying cluster password"
+            results = self.client.modify_cluster(
+                ClusterIdentifier=cluster_id,
+                MasterUserPassword=new_pass
+            )
+            return self.update_status(results=results,
+                                      name=cluster_id,
+                                      status="Modifying password")
+
+        except ClientError as e:
+            results['Clusters'] = results['Clusters'] + ' : ' + e.response
+            return self.update_status(results=results,
+                                      name=cluster_id,
+                                      status="Error changing password")
     @DatabaseUpdate()
     def rename_cluster(self, cluster_id, new_id):
         VERBOSE("in rename")
-        results = self.client.modify_cluster(
-            ClusterIdentifier=cluster_id,
-            NewClusterIdentifier=new_id,
-        )
-        return self.update_status(results=results,
-                                  name=cluster_id,
-                                  status="Renaming")
+
+        results = {}
+        try:
+            results['Clusters'] = "Error renaming cluster"
+            results = self.client.modify_cluster(
+                ClusterIdentifier=cluster_id,
+                NewClusterIdentifier=new_id,
+            )
+            return self.update_status(results=results,
+                                      name=cluster_id,
+                                      status="Renaming")
+
+        except ClientError as e:
+            results['Clusters'] = results['Clusters'] + ' : ' + e.response
+            return self.update_status(results=results,
+                                      name=cluster_id,
+                                      status="Error renaming cluster")
 
     @DatabaseUpdate()
     def allow_access(self, cluster_id):
@@ -334,8 +405,9 @@ class Provider(object):
     def create_demo_schema(self, cluster_id, db_name, host, port, user_name, passwd):
         VERBOSE("in create schema demo")
         print("in create demo schema")
-        results = "Error"
+        results = {}
         try:
+            results['Clusters'] = "Error creating demo schema"
             conn = psycopg2.connect(dbname=db_name, host=host, port=port,
                                     user=user_name, password=passwd)
 
@@ -381,8 +453,10 @@ class Provider(object):
     def delete_demo_schema(self,  cluster_id, db_name, host, port, user_name, passwd):
         VERBOSE("in delete demo")
         print("in delete demo schema")
-        results = "Error"
+
+        results = {}
         try:
+            results['Clusters'] = "Error deleting demo schema"
             conn = psycopg2.connect(dbname=db_name, host=host, port=port,
                                     user=user_name, password=passwd)
 
@@ -417,9 +491,10 @@ class Provider(object):
     def runselectquery_text(self, cluster_id, db_name, host, port, user_name, passwd, query_text):
         VERBOSE("in runselectquery")
         print("In runselectquerytext")
-        # print(args)
-        results = "Error"
+
+        results = {}
         try:
+            results['Clusters'] = "Error running SELECT query"
             conn = psycopg2.connect(dbname=db_name, host=host, port=port,
                                     user=user_name, password=passwd)
 
@@ -440,8 +515,8 @@ class Provider(object):
                 cur.close()
                 conn.close()
                 return self.update_status(results=results,
-                                      name=cluster_id,
-                                      status="Unable to execute query")
+                                        name=cluster_id,
+                                        status="Unable to execute query")
 
             return self.update_status(results=results,
                                       name=cluster_id,
@@ -460,6 +535,8 @@ class Provider(object):
         # print(args)
         results = {}
         try:
+            results['Clusters'] = "Error running DDL statements from file"
+
             conn = psycopg2.connect(dbname=db_name, host=host, port=port,
                                     user=user_name, password=passwd)
 
@@ -482,48 +559,49 @@ class Provider(object):
                     results['success'] = "ok"
                 except psycopg2.InterfaceError as err:
                     print("error in interface:", err)
-                    results['error'] = err
+                    results['Clusters'] = results['Clusters'] + str(err)
                     conn.rollback()
                     continue
                 except psycopg2.DatabaseError as err:
                     print("error related to DB:", err)
-                    results['error'] = err
+                    results['Clusters'] = results['Clusters'] + str(err)
                     conn.rollback()
                     continue
                 except psycopg2.DataError as err:
                     print("error in data:", err)
-                    results['error'] = err
+                    results['Clusters'] = results['Clusters'] + str(err)
                     conn.rollback()
                     continue
                 except psycopg2.OperationalError as err:
                     print("error related to db operation:", err)
-                    results['error'] = err
+                    results['Clusters'] = results['Clusters'] + str(err)
                     conn.rollback()
                     continue
                 except psycopg2.IntegrityError as err:
                     print("error in data integrity:", err)
-                    results['error'] = err
+                    results['Clusters'] = results['Clusters'] + str(err)
                     conn.rollback()
                     continue
                 except psycopg2.InternalError as err:
                     print("error: internal, usually type of DB Error:", err)
-                    results['error'] = err
+                    results['Clusters'] = results['Clusters'] + str(err)
                     conn.rollback()
                     continue
                 except psycopg2.ProgrammingError as err:
                     print("error in Programming:", err)
-                    results['error'] = err
+                    results['Clusters'] = results['Clusters'] + str(err)
                     conn.rollback()
                     continue
                 except psycopg2.NotSupportedError as err:
                     print("error - not supported feature/operation: ", err)
-                    results['error'] = err
+                    results['Clusters'] = results['Clusters'] + str(err)
                     conn.rollback()
                     continue
 
             cur.close()
             conn.commit()
             conn.close()
+            results['Clusters'] = "DDL run successfully"
             return self.update_status(results=results,
                                   name=cluster_id,
                                   status="SQL Execution")
@@ -540,9 +618,9 @@ class Provider(object):
     def rundml(self, cluster_id, db_name, host, port, user_name, passwd, b64_sql_file_contents):
         VERBOSE("in runsql - DML")
         print("In runsql - DML")
-        # print(args)
-        results = "Error"
+        results = {}
         try:
+            results['Clusters'] = "Error running DML statements from file"
             conn = psycopg2.connect(dbname=db_name, host=host, port=port,
                                     user=user_name, password=passwd)
 
@@ -561,26 +639,52 @@ class Provider(object):
                     continue
                 try:
                     cur.execute(stmt)
+
                 except psycopg2.InterfaceError as err:
                     print("error in interface:", err)
+                    results['Clusters'] = results['Clusters'] + str(err)
+                    conn.rollback()
+                    continue
                 except psycopg2.DatabaseError as err:
                     print("error related to DB:", err)
+                    results['Clusters'] = results['Clusters'] + str(err)
+                    conn.rollback()
+                    continue
                 except psycopg2.DataError as err:
                     print("error in data:", err)
+                    results['Clusters'] = results['Clusters'] + str(err)
+                    conn.rollback()
+                    continue
                 except psycopg2.OperationalError as err:
                     print("error related to db operation:", err)
+                    results['Clusters'] = results['Clusters'] + str(err)
+                    conn.rollback()
+                    continue
                 except psycopg2.IntegrityError as err:
                     print("error in data integrity:", err)
+                    results['Clusters'] = results['Clusters'] + str(err)
+                    conn.rollback()
+                    continue
                 except psycopg2.InternalError as err:
                     print("error: internal, usually type of DB Error:", err)
+                    results['Clusters'] = results['Clusters'] + str(err)
+                    conn.rollback()
+                    continue
                 except psycopg2.ProgrammingError as err:
                     print("error in Programming:", err)
+                    results['Clusters'] = results['Clusters'] + str(err)
+                    conn.rollback()
+                    continue
                 except psycopg2.NotSupportedError as err:
                     print("error - not supported feature/operation: ", err)
+                    results['Clusters'] = results['Clusters'] + str(err)
+                    conn.rollback()
+                    continue
 
             cur.close()
             conn.commit()
             conn.close()
+            results['Clusters'] = "DML run successfully"
             return self.update_status(results=results,
                                   name=cluster_id,
                                   status="SQL Execution")

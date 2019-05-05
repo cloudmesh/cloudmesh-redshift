@@ -88,7 +88,8 @@ class RedshiftCommand(PluginCommand):
             Now that we have a redshift cluster, to interface with it, we need to allow access.
 
             redshift allowaccess CLUSTER_ID
-                Configure the cluster for external (For eg. Python) access
+                Configure the cluster for external (For eg. Python) access. This step is a pre-requisite to running
+                any queries on the database.
 
             We can now interface with the redshift cluster.
 

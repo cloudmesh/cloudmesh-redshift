@@ -153,12 +153,31 @@ class TestRedshiftAPIProvider():
     #     pass
 
 
-    # def test_results(self):
-    #     HEADING()
-    #     # storage = self.p.service
-    #     service = self.service
-    #     banner(f"Benchmark results for {service} Storage")
-    #     StopWatch.benchmark()
+    def test_benchmark(self):
+        t = TestRedshiftAPIProvider()
+        # t.t1_describe_clusters()
+        # t.t1_describe_cluster('cl6')
+        # t.t1_create_single_node_cluster('db1', 'my-cl1','single-node','dc2.large','awsuser','AWSPass321')
+
+        # t.t1_create_multi_node_cluster('db1', 'my-cl2','multi-node','dc2.large','awsuser','AWSPass321',2)
+
+        # t.t1_create_single_node_cluster('db1', 'my-cl7','single-node','dc2.large','awsuser','AWSPass321')
+        # t.t1_create_multi_node_cluster('db1', 'my-cl2','multi-node','dc2.large','awsuser','AWSPass321',2)
+
+        # t.t1_allow_access('my-cl7')
+
+        #t.t1_run_select_query(host='my-cl7.ced9iqbk50ks.us-west-2.redshift.amazonaws.com')
+
+        #t.t1_run_ddl('my-cl7',db_name='db1',host='my-cl7.ced9iqbk50ks.us-west-2.redshift.amazonaws.com',port=5439, user_name='awsuser', passwd='AWSPass321', ddl_file="./redshiftddlfile.sql")
+
+        #t.t1_run_dml('my-cl7',db_name='db1',host='my-cl7.ced9iqbk50ks.us-west-2.redshift.amazonaws.com',port=5439, user_name='awsuser', passwd='AWSPass321', dml_file="./redshiftdmlfile.sql")
+
+        #t.t1_run_select_query(host='my-cl7.ced9iqbk50ks.us-west-2.redshift.amazonaws.com')
+
+        t.t1_describe_clusters()
+
+        StopWatch.benchmark()
+
 
 if __name__ == "__main__":
     print("In test_manager")
