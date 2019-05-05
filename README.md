@@ -224,21 +224,17 @@ To view details of a specific cluster
 
 `curl -X DELETE "http://localhost:8080/api/redshift/v1/cluster/cl123" -H "accept: application/json"`
 
-### Creating a demo schema
 
-`cms redshift demoschema db awsuser AWSPass321 cl3.xxxxxx.us-west-2.redshift.amazonaws.com 5439 --createschema`
+### Creating the schema
 
-### Deleting the demo schema
+`curl -X PATCH "http://localhost:8080/cloudmesh/redshift/v1/cluster/cl123/runDDL?dbName=db1&host=cl8.ced9iqbk50ks.us-west-2.redshift.amazonaws.com&port=5439&userName=awsuser&passWord=AWSPass123&sql_file_contents=b'Q1JFQVRFIFRBQkxFIEVNUChFTVBfSUQgSU5ULCBFTVBfTkFNRSBWQVJDSEFSKDEyMCkpOwpDUkVBVEUgVEFCTEUgREVQVCAoREVQVF9JRCBJTlQsIEROQU1FIFZBUkNIQVIoODApKTsKQ1JFQVRFIFRBQkxFIEFTU0lHTiAoRU1QSUQgSU5ULCBERVBUX0lEIElOVCk7Cg%3D%3D'" -H "accept: application/json"`
 
-`cms redshift demoschema db awsuser AWSPass321 cl3.xxxxxx.us-west-2.redshift.amazonaws.com 5439 --deleteschema`
 
-### Adding data to the database (TODO)
+### Adding data to the database 
 
-Data can be added to the cluster using an import, or running insert statements. 
+`curl -X PATCH "http://localhost:8080/cloudmesh/redshift/v1/cluster/cl123/runDML?dbName=db1&host=cl8.ced9iqbk50ks.us-west-2.redshift.amazonaws.com&port=5439&userName=awsuser&passWord=AWSPass123&sql_file_contents=b'SU5TRVJUIElOVE8gRU1QIFZBTFVFUyAoMTAsICdzbWl0aCcpOwpJTlNFUlQgSU5UTyBFTVAgVkFMVUVTICgyMCwgJ2pvbmVzJyk7CklOU0VSVCBJTlRPIEVNUCBWQUxVRVMgKDMwLCAnc2NvdHQnKTsKCg%3D%3D'" -H "accept: application/json"`
 
-The demo schema command above also includes some INSERTs to populate the schema tables.
-
-### Querying the data (TODO)
+### Querying the data 
 
 To query the demo schema table EMP,
 
@@ -246,7 +242,7 @@ To query the demo schema table EMP,
 
 To run any query on EMP
 
-`cms redshift runquery db awsuser AWSPass321 cl3.ced9iqbk50ks.us-west-2.redshift.amazonaws.com 5439 --querytext='"select empname from emp where empid=20;
+`cms redshift runquery db awsuser AWSPass321 cl3.ced9iqbk50ks.us-west-2.redshift.amazonaws.com 5439 --querytext='"select empname from emp where empid=20;`
 
 ## Suggested security levels
 
