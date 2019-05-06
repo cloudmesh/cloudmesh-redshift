@@ -135,7 +135,7 @@ paths:
       - "cluster"
       summary: "Increases cluster nodes"
       description: ""
-      operationId: "cloudmesh.redshift.Provider.resize_cluster"
+      operationId: "cloudmesh.redshift.Provider.resize_cluster_to_multi_node"
       produces:
       - "application/json"
       parameters:
@@ -173,7 +173,7 @@ paths:
       - "cluster"
       summary: "Change  node type"
       description: ""
-      operationId: "cloudmesh.redshift.Provider.change_node_type"
+      operationId: "cloudmesh.redshift.Provider.resize_cluster_node_types"
       produces:
       - "application/json"
       parameters:
@@ -229,7 +229,7 @@ paths:
       - "cluster"
       summary: "Change master password"
       description: "Change the password for the cluster"
-      operationId: "cloudmesh.redshift.Provider.chg_password"
+      operationId: "cloudmesh.redshift.Provider.modify_cluster"
       produces:
       - "application/json"
       parameters:
@@ -378,7 +378,7 @@ paths:
       - "cluster"
       summary: "Runs a query on the cluster"
       description: "Run SQL SELECT Statement"
-      operationId: "cloudmesh.redshift.Provider.runquery"
+      operationId: "cloudmesh.redshift.Provider.runselectquery_text"
       produces:
       - "application/json"
       parameters:
