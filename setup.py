@@ -29,6 +29,12 @@ def readfile(filename):
 #
 requiers = """
 boto3
+psycopg2
+base64
+re
+cloudmesh-common
+cloudmesh-cmd5
+cloudmesh-sys
 """.split("\n")
 
 # dependency_links = ['http://github.com/nicolaiarocci/eve.git@develop']

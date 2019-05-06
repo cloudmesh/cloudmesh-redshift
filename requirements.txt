@@ -1,5 +1,7 @@
 boto3
 psycopg2
 base64
-docopt
 re
+cloudmesh-common
+cloudmesh-cmd5
+cloudmesh-sys
