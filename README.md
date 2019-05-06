@@ -605,7 +605,7 @@ another. The waiter method of AWS RedShift was attempted, but its behavior was n
 
 ### Benchmarks OpenAPI Interface
 
-
+Note: I wasn't able to capture these, as the swagger server got generated with "do some magic".
 
 
 
