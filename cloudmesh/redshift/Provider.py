@@ -2,7 +2,7 @@ from cloudmesh.management.configuration.config import Config
 import uuid
 import boto3
 from botocore.exceptions import ClientError
-from cloudmesh.common.DEBUG import VERBOSE
+from cloudmesh.common.debug import VERBOSE
 from cloudmesh.mongo.DataBaseDecorator import DatabaseUpdate
 import psycopg2
 import re
