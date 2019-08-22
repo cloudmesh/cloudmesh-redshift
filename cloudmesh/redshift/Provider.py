@@ -10,7 +10,7 @@ import base64
 
 class Provider(object):
 
-    def __init__(self, service='redshift', config="~/.cloudmesh/cloudmesh4.yaml"):
+    def __init__(self, service='redshift', config="~/.cloudmesh/cloudmesh.yaml"):
         VERBOSE("initialize redshift manager")
         self.key_id = None
         self.access_key = None

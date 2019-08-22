@@ -55,7 +55,7 @@ The external libraries needed are
 To create an AWS account refer to [this page](https://cloudmesh.github.io/cloudmesh-manual/accounts/aws.html) from the manual 
 
 To configure Cloudmesh for the AWS account, here are the keys to edit.
-Configuration via "~/.cloudmesh/cloudmesh4.yaml"
+Configuration via "~/.cloudmesh/cloudmesh.yaml"
 * cloudmesh.cloud.aws.credentials.EC2_ACCESS_ID
 * cloudmesh.cloud.aws.credentials.EC2_SECRET_KEY
 * cloudmesh.cloud.aws.credentials.region
