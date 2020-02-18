@@ -1,7 +1,7 @@
 ###############################################################
 # pytest -v --capture=no tests/test_redshift_manager.py
 # pytest -v  tests/test_redshift_manager.py
-# pytest -v --capture=no -v --nocapture tests/test_redshift_manager.py:TestRedshiftAPIProvider.<METHODNAME>
+# pytest -v --capture=no -v --nocapture tests/test_redshift_manager..py::TestRedshiftAPIProvider::<METHODNAME>
 ###############################################################
 
 from cloudmesh.redshift.Provider import Provider

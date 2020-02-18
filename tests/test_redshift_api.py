@@ -1,7 +1,7 @@
 ###############################################################
 # pytest -v --capture=no tests/test_redshift_openapi.py
 # pytest -v  tests/test_redshift_openapi.py
-# pytest -v --capture=no -v --nocapture tests/test_redshift_openapi.py:Test_RedShift_openapi.<METHODNAME>
+# pytest -v --capture=no -v --nocapture tests/test_redshift_openapi..py::Test_RedShift_openapi::<METHODNAME>
 ###############################################################
 from cloudmesh.management.configuration.config import Config
 from cloudmesh.common.run.subprocess import run
