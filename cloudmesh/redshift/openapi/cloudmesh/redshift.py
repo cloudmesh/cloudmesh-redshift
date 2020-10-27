@@ -1,4 +1,3 @@
-from __future__ import print_function
 from cloudmesh.redshift.Provider import Provider
 
 
